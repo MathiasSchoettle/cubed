@@ -1,1 +1,3 @@
-LWJGL 3.3.6 build 1
+version https://git-lfs.github.com/spec/v1
+oid sha256:e3d9e6ee6a67d4e872ee0706f212c376105d83726837f29dd44e889c6e46d276
+size 19

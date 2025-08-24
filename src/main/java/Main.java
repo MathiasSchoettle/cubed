@@ -1,5 +1,6 @@
 import camera.Camera;
 import camera.CameraMovement;
+import chunk.Chunk;
 import input.InputHandler;
 import math.vec.Vec2;
 import math.vec.Vec3;
@@ -69,6 +70,8 @@ public class Main {
         glfwShowWindow(window);
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // TODO move to input manager?
 
+        glEnable(GL_DEPTH_TEST);
+
         // delta time calculator
         delta = new Delta();
 
@@ -108,28 +111,31 @@ public class Main {
     private void loop() {
         glClearColor(0f, 0f, 0f, 1f);
 
-        float[] vertices = new float[]{
-                0.0f,  0.5f, -0.5f,
-                -0.5f, -0.5f, -0.5f,
-                0.5f, -0.5f, -.5f
-        };
+//        float[] vertices = new float[]{
+//                0.0f,  0.5f, -0.5f,
+//                -0.5f, -0.5f, -0.5f,
+//                0.5f, -0.5f, -.5f
+//        };
+//
+//        var buffer = MemoryUtil.memAllocFloat(vertices.length);
+//        buffer.put(vertices).flip();
+//
+//        var vaoId = glGenVertexArrays();
+//        glBindVertexArray(vaoId);
+//
+//        var vboId = glGenBuffers();
+//        glBindBuffer(GL_ARRAY_BUFFER, vboId);
+//        glBufferData(GL_ARRAY_BUFFER, buffer, GL_STATIC_DRAW);
+//
+//        memFree(buffer);
+//
+//        glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+//
+//        glBindBuffer(GL_ARRAY_BUFFER, 0);
+//        glBindVertexArray(0);
 
-        var buffer = MemoryUtil.memAllocFloat(vertices.length);
-        buffer.put(vertices).flip();
-
-        var vaoId = glGenVertexArrays();
-        glBindVertexArray(vaoId);
-
-        var vboId = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, vboId);
-        glBufferData(GL_ARRAY_BUFFER, buffer, GL_STATIC_DRAW);
-
-        memFree(buffer);
-
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
+        var chunk = new Chunk();
+        chunk.mesh();
 
         while ( !glfwWindowShouldClose(window) ) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -142,9 +148,9 @@ public class Main {
             // rendering of triangle
             manager.use("simple", uniforms);
 
-            glBindVertexArray(vaoId);
+            glBindVertexArray(chunk.vaoId);
             glEnableVertexAttribArray(0);
-            glDrawArrays(GL_TRIANGLE_FAN, 0, 3);
+            glDrawArrays(GL_TRIANGLES, 0, chunk.vertices.size());
             glDisableVertexAttribArray(0);
             glBindVertexArray(0);
 

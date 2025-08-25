@@ -29,7 +29,7 @@ public class Camera {
 
     public void move(CameraMovement type, float delta) {
 
-        delta *= 5;
+        delta *= 10;
 
         var movement = switch (type) {
             case FORWARD -> direction.getScaled(delta);

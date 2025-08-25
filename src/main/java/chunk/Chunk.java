@@ -36,8 +36,7 @@ public class Chunk {
     public Chunk() {
         var rand = new Random();
         for (int i = 0; i < blocks.length; i++) {
-            blocks[i] = rand.nextFloat() > ((float) i / blocks.length);
-            blocks[i] = true;
+            blocks[i] = rand.nextFloat() > ((float) i / blocks.length) + 0.2f;
         }
     }
 
@@ -59,12 +58,12 @@ public class Chunk {
                     if (!hasBlock(x - 1, y, z)) { // left
                         xcount++;
                         addVertex(0, 0, 0);
-                        addVertex(0, 1, 0);
                         addVertex(0, 1, 1);
+                        addVertex(0, 1, 0);
 
                         addVertex(0, 0, 0);
-                        addVertex(0, 1, 1);
                         addVertex(0, 0, 1);
+                        addVertex(0, 1, 1);
                     }
 
                     if (!hasBlock(x + 1, y, z)) { // right
@@ -89,22 +88,22 @@ public class Chunk {
 
                     if (!hasBlock(x, y, z - 1)) { // front
                         addVertex(0, 0, 0);
-                        addVertex(1, 0, 0);
                         addVertex(1, 1, 0);
+                        addVertex(1, 0, 0);
 
                         addVertex(0, 0,  0);
-                        addVertex(1, 1,  0);
                         addVertex(0, 1,  0);
+                        addVertex(1, 1,  0);
                     }
 
                     if (!hasBlock(x, y + 1, z)) { // top
                         addVertex(0, 1, 0);
-                        addVertex(1, 1, 0);
                         addVertex(1, 1, 1);
+                        addVertex(1, 1, 0);
 
                         addVertex(0, 1, 0);
-                        addVertex(1, 1, 1);
                         addVertex(0, 1, 1);
+                        addVertex(1, 1, 1);
                     }
 
                     if (!hasBlock(x, y - 1, z)) { // bottom

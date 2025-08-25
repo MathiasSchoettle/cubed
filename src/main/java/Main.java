@@ -71,6 +71,7 @@ public class Main {
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // TODO move to input manager?
 
         glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
 
         // delta time calculator
         delta = new Delta();

@@ -1,163 +1,114 @@
 package chunk;
 
-import org.lwjgl.system.MemoryUtil;
+import utils.FloatArray;
+import utils.ShortArray;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
-
-import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
-import static org.lwjgl.opengl.GL15.glBufferData;
-import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
-import static org.lwjgl.opengl.GL30.glBindVertexArray;
-import static org.lwjgl.opengl.GL30.glGenVertexArrays;
-import static org.lwjgl.system.MemoryUtil.memFree;
 
 public class Chunk {
 
-    private static final float CUBE_SIZE = 1.0f;
-
     private static final int CHUNK_SIZE = 16;
-
     private static final int SLICE_SIZE = CHUNK_SIZE * CHUNK_SIZE;
-
     private static final int BLOCK_COUNT = SLICE_SIZE * CHUNK_SIZE;
 
+    static final int BLOCK_DIRECTIONS = 6;
+    static final int[][] BLOCK_FACE_DIRECTION_VECTORS = {
+            {+1,  0,  0}, {-1,  0,  0},
+            { 0, +1,  0}, { 0, -1,  0},
+            { 0,  0, +1}, { 0,  0, -1}
+    };
+    static final int[][][] FACE_CORNERS = {
+            {{1,0,0},{1,0,1},{1,1,1},{1,1,0}}, // +X
+            {{0,0,0},{0,1,0},{0,1,1},{0,0,1}}, // -X
+            {{0,1,0},{1,1,0},{1,1,1},{0,1,1}}, // +Y
+            {{0,0,0},{0,0,1},{1,0,1},{1,0,0}}, // -Y
+            {{0,0,1},{0,1,1},{1,1,1},{1,0,1}}, // +Z
+            {{0,0,0},{1,0,0},{1,1,0},{0,1,0}}  // -Z
+    };
+    float[][][] UV_OFFSETS = {
+            { {0,0}, {1,0}, {1,1}, {0,1} }, // +X
+            { {1,0}, {0,0}, {0,1}, {1,1} }, // -X (flipped horizontally)
+            { {0,1}, {1,1}, {1,0}, {0,0} }, // +Y (flipped vertically)
+            { {0,0}, {1,0}, {1,1}, {0,1} }, // -Y
+            { {0,0}, {1,0}, {1,1}, {0,1} }, // +Z
+            { {0,0}, {1,0}, {1,1}, {0,1} }, // -Z
+    };
+    static final float[][] NORMALS = { // per-face normals
+            {+1,0,0},{-1,0,0},{0,+1,0},{0,-1,0},{0,0,+1},{0,0,-1}
+    };
+
     private final boolean[] blocks = new boolean[BLOCK_COUNT];
-
-    public final List<Float> vertices = new ArrayList<>(100);
-
-    public int vaoId;
-
-    private float globalX, globalY, globalZ;
+    public ShortArray indices = new ShortArray();
+    public FloatArray vertices = new FloatArray();
 
     public Chunk() {
         var rand = new Random();
-        for (int i = 0; i < blocks.length; i++) {
-            blocks[i] = rand.nextFloat() > ((float) i / blocks.length) + 0.2f;
+        for (int i = 0; i < blocks.length; ++i) {
+            blocks[i] = rand.nextBoolean();
         }
+        indices.init(40_000);
+        vertices.init(20_000);
     }
 
-    public void mesh() {
+    public void remesh() {
 
-        int xcount = 0;
+        for (int x = 0; x < CHUNK_SIZE; ++x) for (int y = 0; y < CHUNK_SIZE; ++y) for (int z = 0; z < CHUNK_SIZE; ++z) {
+            if (!get(x, y, z)) {
+                continue;
+            }
 
-        for (int x = 0; x < CHUNK_SIZE; ++x) {
-            for (int y = 0; y < CHUNK_SIZE; ++y) {
-                for (int z = 0; z < CHUNK_SIZE; ++z) {
-                    if (!hasBlock(x, y, z)) {
-                        continue;
-                    }
+            for (int direction = 0; direction < BLOCK_DIRECTIONS; ++direction) {
 
-                    globalX = x;
-                    globalY = y;
-                    globalZ = z;
+                var directionVector = BLOCK_FACE_DIRECTION_VECTORS[direction];
 
-                    if (!hasBlock(x - 1, y, z)) { // left
-                        xcount++;
-                        addVertex(0, 0, 0);
-                        addVertex(0, 1, 1);
-                        addVertex(0, 1, 0);
+                var neighbourIsSolid = hasBlock(
+                        x + directionVector[0],
+                        y + directionVector[1],
+                        z + directionVector[2]
+                );
 
-                        addVertex(0, 0, 0);
-                        addVertex(0, 0, 1);
-                        addVertex(0, 1, 1);
-                    }
-
-                    if (!hasBlock(x + 1, y, z)) { // right
-                        addVertex(1, 0, 0);
-                        addVertex(1, 1, 0);
-                        addVertex(1, 1, 1);
-
-                        addVertex(1, 0,  0);
-                        addVertex(1, 1,  1);
-                        addVertex(1, 0,  1);
-                    }
-
-                    if (!hasBlock(x, y, z + 1)) { // back
-                        addVertex(0, 0, 1);
-                        addVertex(1, 0, 1);
-                        addVertex(1, 1, 1);
-
-                        addVertex(0, 0,  1);
-                        addVertex(1, 1,  1);
-                        addVertex(0, 1,  1);
-                    }
-
-                    if (!hasBlock(x, y, z - 1)) { // front
-                        addVertex(0, 0, 0);
-                        addVertex(1, 1, 0);
-                        addVertex(1, 0, 0);
-
-                        addVertex(0, 0,  0);
-                        addVertex(0, 1,  0);
-                        addVertex(1, 1,  0);
-                    }
-
-                    if (!hasBlock(x, y + 1, z)) { // top
-                        addVertex(0, 1, 0);
-                        addVertex(1, 1, 1);
-                        addVertex(1, 1, 0);
-
-                        addVertex(0, 1, 0);
-                        addVertex(0, 1, 1);
-                        addVertex(1, 1, 1);
-                    }
-
-                    if (!hasBlock(x, y - 1, z)) { // bottom
-                        addVertex(0, 0, 0);
-                        addVertex(1, 0, 0);
-                        addVertex(1, 0, 1);
-
-                        addVertex(0, 0, 0);
-                        addVertex(1, 0, 1);
-                        addVertex(0, 0, 1);
-                    }
+                if (neighbourIsSolid) {
+                    continue;
                 }
+
+                int base = vertices.size() / 8;
+                for (int cornerIndex = 0; cornerIndex < 4; cornerIndex++) {
+                    // positions
+                    var corner = FACE_CORNERS[direction][cornerIndex];
+                    vertices
+                            .push(x + corner[0])
+                            .push(z + corner[2])
+                            .push(y + corner[1]);
+
+                    // normals
+                    var normals = NORMALS[direction];
+                    vertices.push(normals[0]).push(normals[1]).push(normals[2]);
+
+                    // texture coordinates
+                    var uvs = UV_OFFSETS[direction][cornerIndex];
+                    vertices.push(uvs[0]).push(uvs[1]);
+                }
+
+                indices
+                        .push(base).push(base + 1).push(base + 2)
+                        .push(base).push(base + 2).push(base + 3);
             }
         }
-
-        System.out.println(xcount);
-
-        var array = new float[vertices.size()];
-        for (int i = 0; i < vertices.size(); ++i) {
-            array[i] = vertices.get(i);
-        }
-
-        var buffer = MemoryUtil.memAllocFloat(vertices.size());
-        buffer.put(array).flip();
-
-        vaoId = glGenVertexArrays();
-        glBindVertexArray(vaoId);
-
-        var vboId = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, vboId);
-        glBufferData(GL_ARRAY_BUFFER, buffer, GL_STATIC_DRAW);
-
-        memFree(buffer);
-
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
     }
 
-    private void addVertex(float x, float y, float z) {
-        vertices.add(globalX + x);
-        vertices.add(globalY + y);
-        vertices.add(globalZ + z);
+    private boolean get(int x, int y, int z) {
+        return blocks[x + y * CHUNK_SIZE + z * SLICE_SIZE];
     }
 
     private boolean hasBlock(int x, int y, int z) {
-        if (x < 0 || x >= CHUNK_SIZE ||
+        if (
+                x < 0 || x >= CHUNK_SIZE ||
                 y < 0 || y >= CHUNK_SIZE ||
-                z < 0 || z >= CHUNK_SIZE) {
+                z < 0 || z >= CHUNK_SIZE
+        ) {
             return false;
         }
 
-        int index = x + z * CHUNK_SIZE + y * SLICE_SIZE;
-        return blocks[index];
+        return get(x, y, z);
     }
 }

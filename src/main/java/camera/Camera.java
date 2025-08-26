@@ -15,16 +15,17 @@ public class Camera {
     private final Mat4 projectionMatrix = Mat4.of(0);
     private final Mat4 viewMatrix = Mat4.of(0);
 
+    private final float FOV = (float) Math.toRadians(90);
+    private final float NEAR = 0.01f;
+    private final float FAR = 1000;
+    private float aspectRatio = 16f / 9f;
+
     public Camera(Vec3 position, Vec3 direction) {
         this.position = position;
         this.direction = direction;
 
-        float near = 0.001f;
-        float far = 1000.f;
-        float fov = (float) Math.toRadians(90);
-
-        projectionMatrix.perspective(fov, 16f/9f, near, far);
-        viewMatrix.translation(position);
+        updateViewMatrix();
+        updatePerspectiveMatrix();
     }
 
     public void move(CameraMovement type, float delta) {
@@ -41,6 +42,15 @@ public class Camera {
         };
 
         position.add(movement);
+    }
+
+    public void setAspect(float width, float height) {
+        aspectRatio = width / height;
+        updatePerspectiveMatrix();
+    }
+
+    private void updatePerspectiveMatrix() {
+        projectionMatrix.perspective(FOV, aspectRatio, NEAR, FAR);
     }
 
     public void look(float yaw, float pitch) {

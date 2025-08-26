@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.glViewport;
 
 public class InputHandler {
 
@@ -17,12 +18,18 @@ public class InputHandler {
 
     private final List<MouseMoveCallback> mouseMoveCallbacks = new ArrayList<>();
 
+    private final List<ResizeCallback> resizeCallbacks = new ArrayList<>();
+
     private final Vec2 mousePosition;
 
     public InputHandler(long window, Vec2 mousePosition) {
         this.window = window;
         this.mousePosition = mousePosition;
         glfwSetCursorPosCallback(window, (_window, x, y) -> handleMouseMove((float) x, (float) y));
+        glfwSetWindowSizeCallback(window, (_window, width, height) -> {
+            resizeCallbacks.forEach(callback -> callback.apply(width, height));
+            glViewport(0, 0, width, height);
+        });
     }
 
     private void handleMouseMove(float x, float y) {
@@ -49,5 +56,9 @@ public class InputHandler {
 
     public void registerMouseMoveCallback(MouseMoveCallback callback) {
         mouseMoveCallbacks.add(callback);
+    }
+
+    public void registerResizeCallback(ResizeCallback callback) {
+        resizeCallbacks.add(callback);
     }
 }

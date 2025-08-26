@@ -96,6 +96,7 @@ public class Main {
             float yaw = -dx * sensitivity;
             camera.look(yaw, pitch);
         });
+        inputHandler.registerResizeCallback((width, height) -> camera.setAspect(width, height));
 
         // init shader
         manager = new ShaderManager(new ProgramHandler());

@@ -11,8 +11,7 @@ public class Chunk {
     private static final int SLICE_SIZE = CHUNK_SIZE * CHUNK_SIZE;
     private static final int BLOCK_COUNT = SLICE_SIZE * CHUNK_SIZE;
 
-    static final int BLOCK_DIRECTIONS = 6;
-    static final int[][] BLOCK_FACE_DIRECTION_VECTORS = {
+    static final int[][] NORMALS = {
             {+1,  0,  0}, {-1,  0,  0},
             { 0, +1,  0}, { 0, -1,  0},
             { 0,  0, +1}, { 0,  0, -1}
@@ -32,9 +31,6 @@ public class Chunk {
             { {0,0}, {1,0}, {1,1}, {0,1} }, // -Y
             { {0,0}, {1,0}, {1,1}, {0,1} }, // +Z
             { {0,0}, {1,0}, {1,1}, {0,1} }, // -Z
-    };
-    static final float[][] NORMALS = { // per-face normals
-            {+1,0,0},{-1,0,0},{0,+1,0},{0,-1,0},{0,0,+1},{0,0,-1}
     };
 
     private final boolean[] blocks = new boolean[BLOCK_COUNT];
@@ -57,9 +53,9 @@ public class Chunk {
                 continue;
             }
 
-            for (int direction = 0; direction < BLOCK_DIRECTIONS; ++direction) {
+            for (int direction = 0; direction < NORMALS.length; ++direction) {
 
-                var directionVector = BLOCK_FACE_DIRECTION_VECTORS[direction];
+                var directionVector = NORMALS[direction];
 
                 var neighbourIsSolid = hasBlock(
                         x + directionVector[0],

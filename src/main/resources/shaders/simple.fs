@@ -2,6 +2,11 @@
 
 out vec4 fragColor;
 
+in vec3 color;
+in vec2 tc;
+
+uniform sampler2D out_tex;
+
 // simple hash from int → vec3 color
 vec3 hashColor(int id) {
     uint h = uint(id) * 1664525u + 1013904223u; // LCG
@@ -15,4 +20,6 @@ vec3 hashColor(int id) {
 void main()
 {
     fragColor = vec4(hashColor(gl_PrimitiveID).xzz, 1.0);
+    fragColor = vec4(color.xyz, 1);
+    fragColor = texture(out_tex, tc);
 }

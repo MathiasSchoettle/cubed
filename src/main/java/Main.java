@@ -10,14 +10,15 @@ import shader.ProgramHandler;
 import shader.ShaderManager;
 import shader.uniform.Uniforms;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL30.glBindVertexArray;
-import static org.lwjgl.opengl.GL30.glGenVertexArrays;
+import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public class Main {
@@ -139,6 +140,25 @@ public class Main {
     }
 
     public void setupChunk(Chunk chunk) {
+
+        var pixels = new int[0];
+
+        try {
+            BufferedImage image = ImageIO.read(getClass().getResourceAsStream("/textures/dirt.png"));
+            pixels = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
+
+            var texture = glGenTextures();
+            glBindTexture(GL_TEXTURE_2D, texture);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getWidth(), image.getHeight(), 0, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+            glBindTexture(GL_TEXTURE_2D, texture);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
 
         vao = glGenVertexArrays();
         glBindVertexArray(vao);

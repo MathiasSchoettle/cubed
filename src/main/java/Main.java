@@ -35,6 +35,8 @@ public class Main {
 
     private Camera camera;
 
+    private Sun sun;
+
     private final Vec3 color = Vec3.of(0.3f, 0.6f, 0.1f);
 
     public void run() throws IOException {
@@ -102,11 +104,16 @@ public class Main {
         manager = new ShaderManager(new ProgramHandler());
         manager.register("simple", "simple.vs", "simple.fs");
 
+        sun = new Sun(
+                Vec3.of(104, 119, 173).scale(1f / 255f),
+                Vec3.of(123, 32, 82).scale(1f / 255f)
+        );
+
         // setup uniform binding
         uniforms = new Uniforms();
         uniforms.mat4("projection", camera.getProjectionMatrix());
         uniforms.mat4("view", camera.getViewMatrix());
-        uniforms.vec3("color", color);
+        uniforms.vec3("color", sun.color);
     }
 
     int vao, vbo, ibo;
@@ -126,6 +133,7 @@ public class Main {
             manager.update();
             camera.update();
             inputHandler.update();
+            sun.update(delta.delta());
 
             // rendering of triangle
             manager.use("simple", uniforms);

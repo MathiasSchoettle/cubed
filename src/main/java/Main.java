@@ -9,10 +9,9 @@ import org.lwjgl.opengl.*;
 import shader.ProgramHandler;
 import shader.ShaderManager;
 import shader.uniform.Uniforms;
-
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
+import texture.TextureHandler;
+import texture.TextureManager;
+import utils.filesystem.FileLoader;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -37,9 +36,9 @@ public class Main {
 
     private Sun sun;
 
-    private final Vec3 color = Vec3.of(0.3f, 0.6f, 0.1f);
+    private TextureManager textureManager;
 
-    public void run() throws IOException {
+    public void run() {
         init();
         loop();
 
@@ -49,7 +48,7 @@ public class Main {
         glfwTerminate();
     }
 
-    private void init() throws IOException {
+    private void init() {
         GLFWErrorCallback.createPrint(System.err).set();
 
         if ( !glfwInit() ) {
@@ -73,6 +72,13 @@ public class Main {
 
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
+
+        textureManager = new TextureManager(new TextureHandler(), new FileLoader(), "/textures");
+        textureManager.loadTextureArray(
+                "blocks",
+                16, 16,
+                "cobblestone.png", "dirt.png", "sand.png"
+            );
 
         // delta time calculator
         delta = new Delta();
@@ -114,6 +120,7 @@ public class Main {
         uniforms.mat4("projection", camera.getProjectionMatrix());
         uniforms.mat4("view", camera.getViewMatrix());
         uniforms.vec3("color", sun.color);
+        uniforms.integer("textures", () -> 0);
     }
 
     int vao, vbo, ibo;
@@ -135,6 +142,9 @@ public class Main {
             inputHandler.update();
             sun.update(delta.delta());
 
+            glActiveTexture(GL_TEXTURE0);
+            textureManager.bind("blocks");
+
             // rendering of triangle
             manager.use("simple", uniforms);
 
@@ -150,25 +160,6 @@ public class Main {
 
     public void setupChunk(Chunk chunk) {
 
-        var pixels = new int[0];
-
-        try {
-            BufferedImage image = ImageIO.read(getClass().getResourceAsStream("/textures/dirt.png"));
-            pixels = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
-
-            var texture = glGenTextures();
-            glBindTexture(GL_TEXTURE_2D, texture);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getWidth(), image.getHeight(), 0, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-            glBindTexture(GL_TEXTURE_2D, texture);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-
-
         vao = glGenVertexArrays();
         glBindVertexArray(vao);
 
@@ -181,16 +172,18 @@ public class Main {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunk.indices.data, GL_STATIC_DRAW);
 
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 8 * Float.BYTES, 0L);
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, 9 * Float.BYTES, 0L);
         glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, false, 8 * Float.BYTES, 3L * Float.BYTES);
+        glVertexAttribPointer(1, 3, GL_FLOAT, false, 9 * Float.BYTES, 3L * Float.BYTES);
         glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, false, 8 * Float.BYTES, 6L * Float.BYTES);
+        glVertexAttribPointer(2, 2, GL_FLOAT, false, 9 * Float.BYTES, 6L * Float.BYTES);
+        glEnableVertexAttribArray(3);
+        glVertexAttribPointer(3, 1, GL_FLOAT, false, 9 * Float.BYTES, 8L * Float.BYTES);
 
         glBindVertexArray(0);
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         new Main().run();
     }
 }

@@ -53,6 +53,9 @@ public class Chunk {
                 continue;
             }
 
+            double rand = Math.random();
+            float layer = rand < 0.33 ? 0 : rand < 0.66 ? 1 : 2;
+
             for (int direction = 0; direction < NORMALS.length; ++direction) {
 
                 var directionVector = NORMALS[direction];
@@ -67,7 +70,8 @@ public class Chunk {
                     continue;
                 }
 
-                int base = vertices.size() / 8;
+                int base = vertices.size() / 9;
+
                 for (int cornerIndex = 0; cornerIndex < 4; cornerIndex++) {
                     // positions
                     var corner = FACE_CORNERS[direction][cornerIndex];
@@ -83,6 +87,9 @@ public class Chunk {
                     // texture coordinates
                     var uvs = UV_OFFSETS[direction][cornerIndex];
                     vertices.push(uvs[0]).push(uvs[1]);
+
+                    // texture index
+                    vertices.push(layer);
                 }
 
                 indices

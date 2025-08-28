@@ -4,12 +4,13 @@ out vec4 fragColor;
 
 in vec2 tc;
 in vec3 normal;
+in float layer;
 
-uniform sampler2D out_tex;
+uniform sampler2DArray textures;
 uniform vec3 color;
 
 void main()
 {
-    vec4 tex = texture(out_tex, tc);
-    fragColor = mix(tex, vec4(color, 1), 0.2);
+    vec4 tex = texture(textures, vec3(tc, layer));
+    fragColor = tex;
 }

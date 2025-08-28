@@ -5,6 +5,7 @@ import math.vec.Vec3;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class Uniforms {
 
@@ -16,5 +17,9 @@ public class Uniforms {
 
     public void vec3(String name, Vec3 value) {
         uniforms.put(name, new Vec3Uniform(value));
+    }
+
+    public void integer(String name, Supplier<Integer> supplier) {
+        uniforms.put(name, new IntegerUniform(supplier));
     }
 }

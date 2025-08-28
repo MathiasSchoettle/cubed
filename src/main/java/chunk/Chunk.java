@@ -1,7 +1,7 @@
 package chunk;
 
-import utils.FloatArray;
-import utils.ShortArray;
+import utils.data.FloatArray;
+import utils.data.ShortArray;
 
 import java.util.Random;
 

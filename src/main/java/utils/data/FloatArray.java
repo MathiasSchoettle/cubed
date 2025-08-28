@@ -1,4 +1,4 @@
-package utils;
+package utils.data;
 
 import java.util.Arrays;
 

@@ -101,7 +101,7 @@ public class Main {
         inputHandler.registerResizeCallback((width, height) -> camera.setAspect(width, height));
 
         // init shader
-        manager = new ShaderManager(new ProgramHandler());
+        manager = new ShaderManager(new ProgramHandler(), new FileLoader());
         manager.register("simple", "simple.vs", "simple.fs");
 
         sun = new Sun(

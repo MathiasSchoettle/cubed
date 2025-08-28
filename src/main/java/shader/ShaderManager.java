@@ -1,11 +1,13 @@
 package shader;
 
 import shader.uniform.Uniforms;
+import utils.filesystem.FileLoader;
 
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import static org.lwjgl.opengl.GL20.glGetUniformLocation;
@@ -25,30 +27,29 @@ public class ShaderManager {
 
     private final ProgramHandler programHandler;
 
+    private final FileLoader fileLoader;
+
     private final Map<String, ShaderEntry> mappings = new HashMap<>();
 
     // caches uniform locations per shader. Cache must be cleared when a shader is reloaded.
     private final Map<String, Map<String, Integer>> locations = new HashMap<>();
 
-    // TODO try and get rid of the exception here
-    public ShaderManager(ProgramHandler programHandler) throws IOException {
+    public ShaderManager(ProgramHandler programHandler, FileLoader fileLoader) {
         this.programHandler = programHandler;
+        this.fileLoader = fileLoader;
 
-        this.watchService = FileSystems.getDefault().newWatchService();
-        Paths.get(SHADER_DIR).register(watchService, ENTRY_MODIFY);
+        try {
+            this.watchService = FileSystems.getDefault().newWatchService();
+            Paths.get(SHADER_DIR).register(watchService, ENTRY_MODIFY);
+        } catch (IOException e) {
+            // we only use hot reloading in dev, so this is fine
+            throw new RuntimeException(e);
+        }
     }
 
     public void register(String name, String vertexFile, String fragmentFile) {
         mappings.put(name, new ShaderEntry(vertexFile, fragmentFile));
-
-        try {
-            String vertexSource = loadSource(vertexFile);
-            String fragmentSource = loadSource(fragmentFile);
-
-            loadProgram(name, vertexSource, fragmentSource);
-        } catch (IOException e) {
-            System.err.println("Error while loading shader sources for shader " + name);
-        }
+        loadShaders(name, vertexFile, fragmentFile);
     }
 
     /**
@@ -72,11 +73,6 @@ public class ShaderManager {
             int locationId = loc.computeIfAbsent(locationName, (location) -> glGetUniformLocation(program, location));
             uniform.bind(locationId);
         });
-    }
-
-    private void loadProgram(String name, String vertexSource, String fragmentSource) {
-        locations.remove(name);
-        programHandler.load(name, vertexSource, fragmentSource);
     }
 
     public void update() {
@@ -104,24 +100,31 @@ public class ShaderManager {
 
         watchKey.reset();
 
-        mappingsToReload.forEach((shaderName, value) -> {
-            var vertexFile = value.vertexFile;
-            var fragmentFile = value.fragmentFile;
-
-            try {
-                var vertexSource = loadSource(vertexFile);
-                var fragmentSource = loadSource(fragmentFile);
-
-                loadProgram(shaderName, vertexSource, fragmentSource);
-            } catch (IOException e) {
-                System.err.println("Error while reloading shader " + shaderName);
-            }
-        });
+        mappingsToReload.forEach((shaderName, value) -> loadShaders(
+                shaderName,
+                value.vertexFile,
+                value.fragmentFile
+        ));
     }
 
-    private String loadSource(String file) throws IOException {
-        var path = Paths.get(SHADER_DIR + "/" + file);
-        return Files.readString(path);
+    private void loadProgram(String name, String vertexSource, String fragmentSource) {
+        locations.remove(name);
+        programHandler.load(name, vertexSource, fragmentSource);
+    }
+
+    private void loadShaders(String name, String vertexFile, String fragmentFile) {
+        var vertexSource = loadSource(vertexFile);
+        var fragmentSource = loadSource(fragmentFile);
+
+        if (vertexSource.isPresent() && fragmentSource.isPresent()) {
+            loadProgram(name, vertexSource.get(), fragmentSource.get());
+        } else {
+            System.err.println("Could not load shader: " + name);
+        }
+    }
+
+    private Optional<String> loadSource(String file) {
+        return fileLoader.string(SHADER_DIR + "/" + file);
     }
 
     private record ShaderEntry(

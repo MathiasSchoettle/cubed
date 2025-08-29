@@ -1,6 +1,6 @@
 import camera.Camera;
 import camera.CameraMovement;
-import chunk.Chunk;
+import chunk.data.LegacyChunk;
 import input.InputHandler;
 import math.vec.Vec2;
 import math.vec.Vec3;
@@ -128,7 +128,7 @@ public class Main {
     private void loop() {
         glClearColor(0f, 0f, 0f, 1f);
 
-        var chunk = new Chunk();
+        var chunk = new LegacyChunk();
         chunk.remesh();
 
         setupChunk(chunk);
@@ -158,7 +158,7 @@ public class Main {
         }
     }
 
-    public void setupChunk(Chunk chunk) {
+    public void setupChunk(LegacyChunk chunk) {
 
         vao = glGenVertexArrays();
         glBindVertexArray(vao);

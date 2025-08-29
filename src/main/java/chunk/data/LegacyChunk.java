@@ -1,11 +1,11 @@
-package chunk;
+package chunk.data;
 
 import utils.data.FloatArray;
 import utils.data.ShortArray;
 
 import java.util.Random;
 
-public class Chunk {
+public class LegacyChunk {
 
     private static final int CHUNK_SIZE = 16;
     private static final int SLICE_SIZE = CHUNK_SIZE * CHUNK_SIZE;
@@ -37,10 +37,11 @@ public class Chunk {
     public ShortArray indices = new ShortArray();
     public FloatArray vertices = new FloatArray();
 
-    public Chunk() {
+    public LegacyChunk() {
         var rand = new Random();
         for (int i = 0; i < blocks.length; ++i) {
             blocks[i] = rand.nextBoolean();
+            blocks[i] = true;
         }
         indices.init(40_000);
         vertices.init(20_000);

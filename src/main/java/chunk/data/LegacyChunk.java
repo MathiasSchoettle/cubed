@@ -1,9 +1,8 @@
 package chunk.data;
 
+import math.noise.PerlinNoise3D;
 import utils.data.FloatArray;
 import utils.data.ShortArray;
-
-import java.util.Random;
 
 public class LegacyChunk {
 
@@ -38,11 +37,13 @@ public class LegacyChunk {
     public FloatArray vertices = new FloatArray();
 
     public LegacyChunk() {
-        var rand = new Random();
-        for (int i = 0; i < blocks.length; ++i) {
-            blocks[i] = rand.nextBoolean();
-            blocks[i] = true;
+
+        var noise = new PerlinNoise3D(2);
+
+        for (int x = 0; x < CHUNK_SIZE; ++x) for (int y = 0; y < CHUNK_SIZE; ++y) for (int z = 0; z < CHUNK_SIZE; ++z) {
+            blocks[x + y * CHUNK_SIZE + z * SLICE_SIZE] = noise.octaveNoise(x * 0.1f, y * 0.1f, z * 0.1f, 3, 1) > 0.4;
         }
+
         indices.init(40_000);
         vertices.init(20_000);
     }

@@ -1,5 +1,6 @@
 package chunk;
 
+import block.BlockProvider;
 import chunk.data.Chunk;
 import chunk.data.ChunkKey;
 import utils.data.FloatArray;

@@ -2,11 +2,12 @@ package utils.filesystem;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.File;
+import java.nio.file.*;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class FileLoader {
 
@@ -26,16 +27,30 @@ public class FileLoader {
         return wrapInTry(() -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(filename))));
     }
 
-    private <T> Optional<T> wrapInTry(FileSupplier<T> supplier) {
+    public List<String> listFiles(String filename) {
+        return wrapInTry(() -> getClass().getClassLoader().getResource(filename))
+                .flatMap(url -> wrapInTry(url::toURI))
+                .map(Paths::get)
+                .flatMap(path -> wrapInTry(() -> Files.list(path)))
+                .map(paths -> paths.map(Path::toFile))
+                .map(files -> files.map(File::getName))
+                .map(Stream::toList).orElse(List.of());
+    }
+
+    public static void main(String[] args) throws Exception {
+        System.out.println(new FileLoader().listFiles("blocks"));
+    }
+
+    private <T> Optional<T> wrapInTry(ExceptionalSupplier<T> supplier) {
         try {
-            return Optional.of(supplier.get());
+            return Optional.ofNullable(supplier.get());
         } catch (Exception _ignore) {
             return Optional.empty();
         }
     }
 
     @FunctionalInterface
-    private interface FileSupplier<T> {
+    private interface ExceptionalSupplier<T> {
         T get() throws Exception;
     }
 }

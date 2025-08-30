@@ -137,7 +137,7 @@ public class Main {
     private void loop() {
         glClearColor(0f, 0f, 0f, 1f);
 
-        for (int x = 0; x < 3; ++x) for (int y = 0; y < 3; ++y) for (int z = 0; z < 3; ++z) {
+        for (int x = 0; x < 4; ++x) for (int y = 0; y < 2; ++y) for (int z = 0; z < 4; ++z) {
             chunkManager.load(new ChunkKey(x, y, z));
         }
 
@@ -158,7 +158,6 @@ public class Main {
             chunkManager.draw();
 
             glfwSwapBuffers(window);
-
             glfwPollEvents();
         }
     }

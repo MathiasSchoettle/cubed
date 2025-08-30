@@ -88,7 +88,6 @@ public class ChunkManager {
     }
 
     private Mat4 getModelMatrix(ChunkKey key) {
-        System.out.println(key);
         var modelMatrix = Mat4.of(0);
         modelMatrix.translation(
                 key.x() * CHUNK_SIZE,

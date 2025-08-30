@@ -1,0 +1,7 @@
+{
+  "name": "base:sand",
+  "opaque": true,
+  "texture": {
+    "all": "sand.png"
+  }
+}

@@ -126,9 +126,8 @@ public class Main {
         uniforms.integer("textures", () -> 0);
 
         // setup block provider
-        var blockProvider = new BlockProvider();
-        blockProvider.register("base:air");
-        blockProvider.register("base:dirt");
+        // TODO
+        var blockProvider = new BlockProvider(List.of());
 
         // setup chunk manager
         var chunkStorage = new ChunkStorage();

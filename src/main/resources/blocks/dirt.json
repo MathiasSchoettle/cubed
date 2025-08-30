@@ -1,5 +1,7 @@
 {
   "name": "base:dirt",
   "opaque": true,
-  "texture": "dirt.png"
+  "texture": {
+    "all": "dirt.png"
+  }
 }

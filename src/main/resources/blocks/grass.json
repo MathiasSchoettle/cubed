@@ -1,0 +1,9 @@
+{
+  "name": "base:grass",
+  "opaque": true,
+  "texture": {
+    "top": "grass.png",
+    "side": "dirt.png",
+    "bottom": "dirt.png"
+  }
+}

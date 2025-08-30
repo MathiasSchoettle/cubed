@@ -1,5 +1,6 @@
 package block;
 
+import block.meta.BlockMeta;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import utils.filesystem.FileLoader;
 

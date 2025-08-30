@@ -16,7 +16,7 @@ public class FloatArray {
 
     public FloatArray push(float value) {
         if (length == data.length) {
-            data = Arrays.copyOf(data, data.length * 2);
+            data = Arrays.copyOf(data, (data.length + 1) * 2);
         }
         data[length++] = value;
         return this;
@@ -28,5 +28,9 @@ public class FloatArray {
 
     public int size() {
         return length;
+    }
+
+    public void clear() {
+        length = 0;
     }
 }

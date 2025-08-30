@@ -8,9 +8,16 @@ public class Chunk {
     public final short[] blockData = new short[BLOCK_COUNT];
 
     public short get(int x, int y, int z) {
-        assert x > 0 && x < CHUNK_SIZE;
-        assert y > 0 && y < CHUNK_SIZE;
-        assert z > 0 && z < CHUNK_SIZE;
-        return blockData[x + y * CHUNK_SIZE * z * SLICE_SIZE];
+        assert x >= 0 && x < CHUNK_SIZE;
+        assert y >= 0 && y < CHUNK_SIZE;
+        assert z >= 0 && z < CHUNK_SIZE;
+        return blockData[x + y * CHUNK_SIZE + z * SLICE_SIZE];
+    }
+
+    public void set(int x, int y, int z, short value) {
+        assert x >= 0 && x < CHUNK_SIZE;
+        assert y >= 0 && y < CHUNK_SIZE;
+        assert z >= 0 && z < CHUNK_SIZE;
+        blockData[x + y * CHUNK_SIZE + z * SLICE_SIZE] = value;
     }
 }

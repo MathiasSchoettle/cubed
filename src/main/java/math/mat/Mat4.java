@@ -48,10 +48,16 @@ public class Mat4 {
         values[15] = 0;
     }
 
-    public void translation(Vec3 position) {
+    public void translation(float x, float y, float z) {
         identity();
-        values[12] = position.x;
-        values[13] = position.y;
-        values[14] = position.z;
+        values[12] = x;
+        values[13] = y;
+        values[14] = z;
+    }
+
+
+    @Override
+    public String toString() {
+        return Arrays.toString(values);
     }
 }

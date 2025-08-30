@@ -1,6 +1,7 @@
 import camera.Camera;
 import camera.CameraMovement;
-import chunk.data.LegacyChunk;
+import chunk.*;
+import chunk.data.ChunkKey;
 import input.InputHandler;
 import math.vec.Vec2;
 import math.vec.Vec3;
@@ -17,16 +18,13 @@ import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public class Main {
 
     private long window;
 
-    private ShaderManager manager;
-
-    private Uniforms uniforms;
+    private ShaderManager shaderManager;
 
     private InputHandler inputHandler;
 
@@ -37,6 +35,8 @@ public class Main {
     private Sun sun;
 
     private TextureManager textureManager;
+
+    private ChunkManager chunkManager;
 
     public void run() {
         init();
@@ -107,8 +107,8 @@ public class Main {
         inputHandler.registerResizeCallback((width, height) -> camera.setAspect(width, height));
 
         // init shader
-        manager = new ShaderManager(new ProgramHandler(), new FileLoader());
-        manager.register("simple", "simple.vs", "simple.fs");
+        shaderManager = new ShaderManager(new ProgramHandler(), new FileLoader());
+        shaderManager.register("simple", "simple.vs", "simple.fs");
 
         sun = new Sun(
                 Vec3.of(104, 119, 173).scale(1f / 255f),
@@ -116,29 +116,38 @@ public class Main {
         );
 
         // setup uniform binding
-        uniforms = new Uniforms();
+        Uniforms uniforms = new Uniforms();
         uniforms.mat4("projection", camera.getProjectionMatrix());
         uniforms.mat4("view", camera.getViewMatrix());
         uniforms.vec3("color", sun.color);
         uniforms.integer("textures", () -> 0);
-    }
 
-    int vao, vbo, ibo;
+        // setup block provider
+        var blockProvider = new BlockProvider();
+        blockProvider.register("base:air");
+        blockProvider.register("base:dirt");
+
+        // setup chunk manager
+        var chunkStorage = new ChunkStorage();
+        var chunkGenerator = new ChunkGenerator(1, blockProvider);
+        var chunkMesher = new ChunkMesher(blockProvider);
+        chunkManager = new ChunkManager(chunkStorage, chunkGenerator, chunkMesher, shaderManager, uniforms);
+    }
 
     private void loop() {
         glClearColor(0f, 0f, 0f, 1f);
 
-        var chunk = new LegacyChunk();
-        chunk.remesh();
+        for (int x = 0; x < 3; ++x) for (int y = 0; y < 3; ++y) for (int z = 0; z < 3; ++z) {
+            chunkManager.load(new ChunkKey(x, y, z));
+        }
 
-        setupChunk(chunk);
-//        glPolygonMode(GL_FRONT, GL_LINE);
+        chunkManager.mesh();
 
         while ( !glfwWindowShouldClose(window) ) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             delta.update();
-            manager.update();
+            shaderManager.update();
             camera.update();
             inputHandler.update();
             sun.update(delta.delta());
@@ -146,42 +155,12 @@ public class Main {
             glActiveTexture(GL_TEXTURE0);
             textureManager.bind("blocks");
 
-            // rendering of triangle
-            manager.use("simple", uniforms);
-
-            glBindVertexArray(vao);
-            glDrawElements(GL_TRIANGLES, chunk.indices.size(), GL_UNSIGNED_SHORT, 0L);
-            glBindVertexArray(0);
+            chunkManager.draw();
 
             glfwSwapBuffers(window);
 
             glfwPollEvents();
         }
-    }
-
-    public void setupChunk(LegacyChunk chunk) {
-
-        vao = glGenVertexArrays();
-        glBindVertexArray(vao);
-
-        vbo = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, chunk.vertices.data, GL_STATIC_DRAW);
-
-        ibo = glGenBuffers();
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunk.indices.data, GL_STATIC_DRAW);
-
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 9 * Float.BYTES, 0L);
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, false, 9 * Float.BYTES, 3L * Float.BYTES);
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, false, 9 * Float.BYTES, 6L * Float.BYTES);
-        glEnableVertexAttribArray(3);
-        glVertexAttribPointer(3, 1, GL_FLOAT, false, 9 * Float.BYTES, 8L * Float.BYTES);
-
-        glBindVertexArray(0);
     }
 
     public static void main(String[] args) {

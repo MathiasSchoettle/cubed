@@ -15,6 +15,8 @@ import texture.TextureHandler;
 import texture.TextureManager;
 import utils.filesystem.FileLoader;
 
+import java.util.List;
+
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -78,7 +80,7 @@ public class Main {
         textureManager.loadTextureArray(
                 "blocks",
                 16, 16,
-                "cobblestone.png", "dirt.png", "sand.png"
+                List.of("cobblestone.png", "dirt.png", "sand.png")
             );
 
         // delta time calculator

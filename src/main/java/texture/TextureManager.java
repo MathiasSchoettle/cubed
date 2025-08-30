@@ -21,9 +21,9 @@ public class TextureManager {
         this.pathPrefix = pathPrefix;
     }
 
-    public void loadTextureArray(String name, int width, int height, String ...textureFiles) {
+    public void loadTextureArray(String name, int width, int height, List<String> textureFiles) {
 
-        if (textureFiles.length == 0) {
+        if (textureFiles.isEmpty()) {
             System.err.println("Unable to load texture array: " + name + ", no textures provided");
             return;
         }

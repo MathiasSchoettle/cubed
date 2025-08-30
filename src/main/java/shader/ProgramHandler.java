@@ -13,6 +13,7 @@ public class ProgramHandler {
 
     private final Map<String, Integer> programs = new HashMap<>();
 
+    // FIXME: clean up shader and programs on error!
     public Optional<Integer> load(String name, String vertexSource, String fragmentSource) {
 
         var vertexShaderId = createShader(vertexSource, GL_VERTEX_SHADER);

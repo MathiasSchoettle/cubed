@@ -1,6 +1,6 @@
 package chunk.data;
 
-import math.noise.PerlinNoise3D;
+import math.noise.SimplexNoise;
 import utils.data.FloatArray;
 import utils.data.ShortArray;
 
@@ -38,10 +38,15 @@ public class LegacyChunk {
 
     public LegacyChunk() {
 
-        var noise = new PerlinNoise3D(2);
+        var freq = 1.0 / 24.0;
 
         for (int x = 0; x < CHUNK_SIZE; ++x) for (int y = 0; y < CHUNK_SIZE; ++y) for (int z = 0; z < CHUNK_SIZE; ++z) {
-            blocks[x + y * CHUNK_SIZE + z * SLICE_SIZE] = noise.octaveNoise(x * 0.1f, y * 0.1f, z * 0.1f, 3, 1) > 0.4;
+            blocks[x + y * CHUNK_SIZE + z * SLICE_SIZE] = SimplexNoise.noise3_ImproveXY(
+                    1,
+                    x * freq,
+                    y * freq,
+                    z * freq
+            ) > 0;
         }
 
         indices.init(40_000);

@@ -132,6 +132,7 @@ public class Main {
         chunk.remesh();
 
         setupChunk(chunk);
+//        glPolygonMode(GL_FRONT, GL_LINE);
 
         while ( !glfwWindowShouldClose(window) ) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

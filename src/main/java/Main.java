@@ -113,12 +113,9 @@ public class Main {
         chunkManager = new ChunkManager(chunkStorage, chunkGenerator, chunkMesher, shaderManager, uniforms);
 
         // create these chunks
-        for (int x = 0; x < 4; ++x) for (int y = 0; y < 3; ++y) for (int z = 0; z < 4; ++z) {
+        for (int x = 0; x < 2; ++x) for (int y = 0; y < 2; ++y) for (int z = 0; z < 2; ++z) {
             chunkManager.load(new ChunkKey(x, y, z));
         }
-
-        // create mesh for each chunk
-        chunkManager.mesh();
     }
 
     private void loop() {
@@ -134,6 +131,7 @@ public class Main {
             shaderManager.update();
             cameraController.update();
             inputHandler.update();
+            chunkManager.update();
 
             chunkManager.draw();
 

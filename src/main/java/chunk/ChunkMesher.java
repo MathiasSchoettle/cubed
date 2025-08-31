@@ -1,7 +1,7 @@
 package chunk;
 
 import block.BlockProvider;
-import chunk.data.Chunk;
+import chunk.data.ChunkData;
 import chunk.data.ChunkKey;
 import utils.data.FloatArray;
 import utils.data.ShortArray;
@@ -29,12 +29,9 @@ public class ChunkMesher {
         this.blockProvider = blockProvider;
     }
 
-    /**
-     * @param neighbours -X, +X, -Y, +Y, -Z, +Z TODO make this consistent, normally we do +x, -x, +y, -y, +z, -z
-     */
-    public void mesh(ChunkKey key, Chunk chunk, Chunk[] neighbours) {
+    public void mesh(ChunkKey key, ChunkData chunk) {
 
-        generateData(chunk, neighbours);
+        generateData(chunk);
 
         // clear existing buffers on gpu
         remove(key); // TODO: have a look at glBufferSubData, if we can reuse same objects even if amount of vertices change?
@@ -84,12 +81,12 @@ public class ChunkMesher {
         return Optional.ofNullable(data);
     }
 
-    private void generateData(Chunk chunk, Chunk[] neighbours) {
+    private void generateData(ChunkData chunkData) {
         var airId = blockProvider.getBlockId("base:air");
 
         for (int x = 0; x < CHUNK_SIZE; ++x) for (int y = 0; y < CHUNK_SIZE; ++y) for (int z = 0; z < CHUNK_SIZE; ++z) {
 
-            var blockId = chunk.get(x, y, z);
+            var blockId = chunkData.chunk.get(x, y, z);
 
             if (blockId == airId) {
                 continue;
@@ -105,8 +102,7 @@ public class ChunkMesher {
                         directionVector[0],
                         directionVector[1],
                         directionVector[2],
-                        chunk,
-                        neighbours,
+                        chunkData,
                         airId
                 ) != airId;
 
@@ -144,7 +140,7 @@ public class ChunkMesher {
         }
     }
 
-    private short getBlock(int x, int y, int z, int dx, int dy, int dz, Chunk chunk, Chunk[] neighbours, short defaultId) {
+    private short getBlock(int x, int y, int z, int dx, int dy, int dz, ChunkData chunkData, short defaultId) {
         int nx = x + dx;
         int ny = y + dy;
         int nz = z + dz;
@@ -154,18 +150,18 @@ public class ChunkMesher {
                 ny >= 0 && ny < CHUNK_SIZE &&
                 nz >= 0 && nz < CHUNK_SIZE
         ) {
-            return chunk.get(nx, ny, nz);
+            return chunkData.chunk.get(nx, ny, nz);
         }
 
         int neighbourIndex;
-        if (nx < 0) neighbourIndex = 0;       // -X
-        else if (nx >= CHUNK_SIZE) neighbourIndex = 1; // +X
-        else if (ny < 0) neighbourIndex = 2;  // -Y
-        else if (ny >= CHUNK_SIZE) neighbourIndex = 3; // +Y
-        else if (nz < 0) neighbourIndex = 4;  // -Z
-        else neighbourIndex = 5; // +Z
+        if (nx >= CHUNK_SIZE) neighbourIndex = 0; // +X
+        else if (nx < 0) neighbourIndex = 1;       // -X
+        else if (ny >= CHUNK_SIZE) neighbourIndex = 2; // +Y
+        else if (ny < 0) neighbourIndex = 3;  // -Y
+        else if (nz >= CHUNK_SIZE) neighbourIndex = 4; // +Z
+        else neighbourIndex = 5;  // -Z
 
-        var neighbour = neighbours[neighbourIndex];
+        var neighbour = chunkData.neighbours[neighbourIndex];
 
         if (neighbour == null) {
             return defaultId;
@@ -175,7 +171,7 @@ public class ChunkMesher {
         int cy = (ny + CHUNK_SIZE) % CHUNK_SIZE;
         int cz = (nz + CHUNK_SIZE) % CHUNK_SIZE;
 
-        return neighbour.get(cx, cy, cz);
+        return neighbour.chunk.get(cx, cy, cz);
     }
 
     static final int[][] NORMALS = {

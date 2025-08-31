@@ -1,6 +1,6 @@
 package chunk;
 
-import chunk.data.Chunk;
+import chunk.data.ChunkData;
 import chunk.data.ChunkKey;
 import math.mat.Mat4;
 import shader.ShaderManager;
@@ -40,50 +40,81 @@ public class ChunkManager {
         this.uniforms.mat4("model", modelMatrix);
     }
 
-    public Chunk load(ChunkKey key) {
+    public void load(ChunkKey key) {
+        if (chunkMap.containsKey(key)) {
+            return;
+        }
         var chunk = storage.load(key).orElseGet(() -> generator.generate(key));
-        chunkMap.put(key, new ChunkData(chunk, getModelMatrix(key)));
-        return chunk;
+        var data = new ChunkData(chunk, getModelMatrix(key));
+        setNeighbours(key, data);
+        chunkMap.put(key, data);
+    }
+
+    // TODO do this in a single loop
+    private void setNeighbours(ChunkKey key, ChunkData data) {
+        for (int x = 0; x <= 1; x++) {
+            int offset = 1 - (x * 2);
+            var neighbour = chunkMap.get(new ChunkKey(key.x() + offset, key.y(), key.z()));
+
+            if (neighbour != null) {
+                data.neighbours[x] = neighbour;
+                neighbour.neighbours[(x * -1) + 1] = data;
+                neighbour.needsRemesh = true;
+            }
+        }
+
+        for (int y = 0; y <= 1; y++) {
+            int offset = 1 - (y * 2);
+            var neighbour = chunkMap.get(new ChunkKey(key.x(), key.y() + offset, key.z()));
+
+            if (neighbour != null) {
+                data.neighbours[2 + y] = neighbour;
+                neighbour.neighbours[2 + (y * -1) + 1] = data;
+                neighbour.needsRemesh = true;
+            }
+        }
+
+        for (int z = 0; z <= 1; z++) {
+            int offset = 1 - (z * 2);
+            var neighbour = chunkMap.get(new ChunkKey(key.x(), key.y(), key.z() + offset));
+
+            if (neighbour != null) {
+                data.neighbours[4 + z] = neighbour;
+                neighbour.neighbours[4 + (z * -1) + 1] = data;
+                neighbour.needsRemesh = true;
+            }
+        }
     }
 
     public void unload(ChunkKey key) {
         var data = chunkMap.remove(key);
-        mesher.remove(key);
-        storage.persist(key, data.chunk);
+        if (data != null) {
+
+            // remove from neighbours
+            for (int i = 0; i < 3; ++i) {
+                for (int j = 0; j < 2; ++j) {
+                    var neighbour = data.neighbours[2 * i + (j * -1) + 1];
+                    if (neighbour != null) {
+                        neighbour.neighbours[2 * i + j] = null;
+                        neighbour.needsRemesh = true;
+                    }
+                }
+            }
+
+            mesher.remove(key);
+            storage.persist(key, data.chunk);
+        }
     }
 
-    public void mesh() {
+    public void update() {
         for (var entry : chunkMap.entrySet()) {
-            var key = entry.getKey();
-            var data = entry.getValue();
+            if (entry.getValue().needsRemesh) {
+                var key = entry.getKey();
+                var data = entry.getValue();
 
-            Chunk[] neighbours = new Chunk[6];
-
-            for (int x = -1; x <= 1; x+=2) {
-                var neighbour = chunkMap.get(new ChunkKey(key.x() + x, key.y(), key.z()));
-                if (neighbour != null) {
-                    int index = (x + 1) / 2;
-                    neighbours[index] = neighbour.chunk;
-                }
+                mesher.mesh(key, data);
+                data.needsRemesh = false;
             }
-
-            for (int y = -1; y <= 1; y+=2) {
-                var neighbour = chunkMap.get(new ChunkKey(key.x(), key.y() + y, key.z()));
-                if (neighbour != null) {
-                    int index = (y + 1) / 2;
-                    neighbours[2 + index] = neighbour.chunk;
-                }
-            }
-
-            for (int z = -1; z <= 1; z+=2) {
-                var neighbour = chunkMap.get(new ChunkKey(key.x(), key.y(), key.z() + z));
-                if (neighbour != null) {
-                    int index = (z + 1) / 2;
-                    neighbours[4 + index] = neighbour.chunk;
-                }
-            }
-
-            mesher.mesh(key, data.chunk, neighbours);
         }
     }
 
@@ -103,7 +134,7 @@ public class ChunkManager {
         for (var entry : chunkMap.entrySet()) {
             var optionalData = mesher.getData(entry.getKey());
 
-            this.modelMatrix.set(entry.getValue().modelMatrix());
+            this.modelMatrix.set(entry.getValue().modelMatrix);
 
             shaderManager.use("simple", uniforms);
 
@@ -115,10 +146,4 @@ public class ChunkManager {
 
         glBindVertexArray(0);
     }
-
-    // TODO: maybe store neighbours in array here as well? maybe even as map, with chunk key as key?
-    private record ChunkData(
-            Chunk chunk,
-            Mat4 modelMatrix
-    ) {}
 }

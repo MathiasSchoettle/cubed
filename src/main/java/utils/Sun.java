@@ -1,3 +1,5 @@
+package utils;
+
 import math.vec.Vec3;
 
 public class Sun {

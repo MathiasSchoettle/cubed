@@ -27,7 +27,8 @@ public class ChunkGenerator {
         var dirtId = blockProvider.getBlockId("base:dirt");
         var grassId = blockProvider.getBlockId("base:grass");
         var stoneId = blockProvider.getBlockId("base:stone");
-        var cobblestone = blockProvider.getBlockId("base:cobblestone");
+        var cobblestoneId = blockProvider.getBlockId("base:cobblestone");
+        var sandId = blockProvider.getBlockId("base:sand");
 
         for (int x = 0; x < CHUNK_SIZE; ++x) for (int y = 0; y < CHUNK_SIZE; ++y) for (int z = 0; z < CHUNK_SIZE; ++z) {
 
@@ -43,7 +44,7 @@ public class ChunkGenerator {
                     if (noise < 0.5) {
                         chunk.set(x, y, z, stoneId);
                     } else {
-                        chunk.set(x,y ,z, cobblestone);
+                        chunk.set(x,y ,z, cobblestoneId);
                     }
                 } else {
                     if (noiseAbove > 0) {

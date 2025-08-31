@@ -28,17 +28,15 @@ public class Camera {
         updatePerspectiveMatrix();
     }
 
-    public void move(CameraMovement type, float delta) {
-
-        delta *= 10;
+    public void move(CameraMovement type, float speed) {
 
         var movement = switch (type) {
-            case FORWARD -> direction.getScaled(delta);
-            case BACKWARD -> direction.getScaled(delta).invert();
-            case RIGHT -> right.getScaled(delta);
-            case LEFT -> right.getScaled(delta).invert();
-            case UP -> up.getScaled(delta);
-            case DOWN -> up.getScaled(delta).invert();
+            case FORWARD -> direction.getScaled(speed);
+            case BACKWARD -> direction.getScaled(speed).invert();
+            case RIGHT -> right.getScaled(speed);
+            case LEFT -> right.getScaled(speed).invert();
+            case UP -> up.getScaled(speed);
+            case DOWN -> up.getScaled(speed).invert();
         };
 
         position.add(movement);

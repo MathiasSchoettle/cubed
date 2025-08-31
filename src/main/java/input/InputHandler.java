@@ -16,19 +16,33 @@ public class InputHandler {
 
     private final Map<Integer, List<KeyCallback>> keyCallbacks = new HashMap<>();
 
+    private final Map<Integer, List<KeypressCallback>> keypressCallbacks = new HashMap<>();
+
     private final List<MouseMoveCallback> mouseMoveCallbacks = new ArrayList<>();
 
     private final List<ResizeCallback> resizeCallbacks = new ArrayList<>();
 
     private final Vec2 mousePosition;
 
-    public InputHandler(long window, Vec2 mousePosition) {
+    public InputHandler(long window) {
         this.window = window;
-        this.mousePosition = mousePosition;
+
+        // get initial mouse pos
+        double[] xPos = {0};
+        double[] yPos = {0};
+        glfwGetCursorPos(window, xPos, yPos);
+        this.mousePosition = Vec2.of((float) xPos[0], (float) yPos[0]);
+
         glfwSetCursorPosCallback(window, (_window, x, y) -> handleMouseMove((float) x, (float) y));
-        glfwSetWindowSizeCallback(window, (_window, width, height) -> {
-            resizeCallbacks.forEach(callback -> callback.apply(width, height));
-            glViewport(0, 0, width, height);
+
+        glfwSetWindowSizeCallback(window, (_window, width, height) -> resizeCallbacks.forEach(callback -> callback.apply(width, height)));
+
+        glfwSetKeyCallback(window, (_window, key, scancode, action, mods) -> {
+            keypressCallbacks.forEach((k, callbacks) -> {
+                if (key == k) {
+                    callbacks.forEach(callback -> callback.apply(action));
+                }
+            });
         });
     }
 
@@ -52,6 +66,10 @@ public class InputHandler {
 
     public void registerKeyCallback(int key, KeyCallback callback) {
         keyCallbacks.computeIfAbsent(key, (k) -> new ArrayList<>()).add(callback);
+    }
+
+    public void registerKeypressCallback(int key, KeypressCallback callback) {
+        keypressCallbacks.computeIfAbsent(key, (k) -> new ArrayList<>()).add(callback);
     }
 
     public void registerMouseMoveCallback(MouseMoveCallback callback) {

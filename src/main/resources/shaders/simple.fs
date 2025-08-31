@@ -7,7 +7,6 @@ in vec3 normal;
 in float layer;
 
 uniform sampler2DArray textures;
-uniform vec3 color;
 
 void main()
 {

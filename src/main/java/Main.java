@@ -1,11 +1,10 @@
 import block.BlockLoader;
 import block.BlockProvider;
 import camera.Camera;
-import camera.CameraMovement;
+import camera.CameraController;
 import chunk.*;
 import chunk.data.ChunkKey;
 import input.InputHandler;
-import math.vec.Vec2;
 import math.vec.Vec3;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
@@ -13,6 +12,7 @@ import shader.ProgramHandler;
 import shader.ShaderManager;
 import shader.uniform.Uniforms;
 import texture.TextureHandler;
+import utils.Delta;
 import utils.filesystem.FileLoader;
 
 import java.util.List;
@@ -33,13 +33,13 @@ public class Main {
 
     private Delta delta;
 
-    private Camera camera;
-
-    private Sun sun;
+    private CameraController cameraController;
 
     private ChunkManager chunkManager;
 
     private TextureHandler textureHandler;
+
+    private final FileLoader fileLoader = new FileLoader();
 
     public void run() {
         init();
@@ -79,45 +79,22 @@ public class Main {
         // delta time calculator
         delta = new Delta();
 
-        FileLoader fileLoader = new FileLoader();
+        // setup input handler
+        inputHandler = new InputHandler(window);
+        inputHandler.registerResizeCallback((width, height) -> glViewport(0, 0, width, height));
 
-        camera = new Camera(Vec3.of(0, 0, 5), Vec3.of(0, 0, -1));
 
-        // get initial mouse pos
-        double[] xPos = {0};
-        double[] yPos = {0};
-        glfwGetCursorPos(window, xPos, yPos);
-        inputHandler = new InputHandler(window, Vec2.of((float) xPos[0], (float) yPos[0]));
-
-        // setup camera movement
-        inputHandler.registerKeyCallback(GLFW_KEY_W, () -> camera.move(CameraMovement.FORWARD, delta.delta()));
-        inputHandler.registerKeyCallback(GLFW_KEY_S, () -> camera.move(CameraMovement.BACKWARD, delta.delta()));
-        inputHandler.registerKeyCallback(GLFW_KEY_A, () -> camera.move(CameraMovement.LEFT, delta.delta()));
-        inputHandler.registerKeyCallback(GLFW_KEY_D, () -> camera.move(CameraMovement.RIGHT, delta.delta()));
-        inputHandler.registerKeyCallback(GLFW_KEY_SPACE, () -> camera.move(CameraMovement.UP, delta.delta()));
-        inputHandler.registerKeyCallback(GLFW_KEY_LEFT_CONTROL, () -> camera.move(CameraMovement.DOWN, delta.delta()));
-        inputHandler.registerMouseMoveCallback((x, y, dx, dy) -> {
-            float sensitivity = 0.002f;
-            float pitch = -dy * sensitivity;
-            float yaw = -dx * sensitivity;
-            camera.look(yaw, pitch);
-        });
-        inputHandler.registerResizeCallback((width, height) -> camera.setAspect(width, height));
+        // setup camera controller
+        cameraController = new CameraController(new Camera(Vec3.of(0, 0, 5), Vec3.of(0, 0, -1)), inputHandler, delta);
 
         // init shader
         shaderManager = new ShaderManager(new ProgramHandler(), fileLoader);
         shaderManager.register("simple", "simple.vs", "simple.fs");
 
-        sun = new Sun(
-                Vec3.of(104, 119, 173).scale(1f / 255f),
-                Vec3.of(123, 32, 82).scale(1f / 255f)
-        );
-
         // setup uniform binding
         Uniforms uniforms = new Uniforms();
-        uniforms.mat4("projection", camera.getProjectionMatrix());
-        uniforms.mat4("view", camera.getViewMatrix());
-        uniforms.vec3("color", sun.color);
+        uniforms.mat4("projection", cameraController.camera().getProjectionMatrix());
+        uniforms.mat4("view", cameraController.camera().getViewMatrix());
         uniforms.integer("textures", () -> 0);
 
         // setup block provider
@@ -126,24 +103,26 @@ public class Main {
 
         // setup textures
         textureHandler = new TextureHandler();
-        List<int[]> list = blockProvider.getTextures().stream().flatMap(name -> fileLoader.pixels("/textures/" + name).stream()).toList();
-        textureHandler.loadTextureArray("blocks", 16, 16, list);
+        List<int[]> pixels = blockProvider.getTextures().stream().flatMap(name -> fileLoader.pixels("/textures/" + name).stream()).toList();
+        textureHandler.loadTextureArray("blocks", 16, 16, pixels);
 
         // setup chunk manager
         var chunkStorage = new ChunkStorage();
         var chunkGenerator = new ChunkGenerator(1, blockProvider);
         var chunkMesher = new ChunkMesher(blockProvider);
         chunkManager = new ChunkManager(chunkStorage, chunkGenerator, chunkMesher, shaderManager, uniforms);
-    }
 
-    private void loop() {
-        glClearColor(0f, 0f, 0f, 1f);
-
+        // create these chunks
         for (int x = 0; x < 4; ++x) for (int y = 0; y < 3; ++y) for (int z = 0; z < 4; ++z) {
             chunkManager.load(new ChunkKey(x, y, z));
         }
 
+        // create mesh for each chunk
         chunkManager.mesh();
+    }
+
+    private void loop() {
+        glClearColor(0f, 0f, 0f, 1f);
 
         glActiveTexture(GL_TEXTURE0);
         textureHandler.bind("blocks");
@@ -153,9 +132,8 @@ public class Main {
 
             delta.update();
             shaderManager.update();
-            camera.update();
+            cameraController.update();
             inputHandler.update();
-            sun.update(delta.delta());
 
             chunkManager.draw();
 

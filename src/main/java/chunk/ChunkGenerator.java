@@ -13,6 +13,7 @@ public class ChunkGenerator {
     private final BlockProvider blockProvider;
 
     private static final double FREQUENCY = 1.0 / 12.0;
+    private static final double PLATEAU_FREQUENCY = 1.0 / 24.0;
 
     public ChunkGenerator(long seed, BlockProvider blockProvider) {
         this.seed = seed;
@@ -35,6 +36,13 @@ public class ChunkGenerator {
             int gx = (key.x() * CHUNK_SIZE) + x;
             int gy = (key.y() * CHUNK_SIZE) + y;
             int gz = (key.z() * CHUNK_SIZE) + z;
+
+            var floorNoise = 10 * (SimplexNoise.noise2_ImproveX(seed * 2, gx * PLATEAU_FREQUENCY, gz * PLATEAU_FREQUENCY) + 1) + 5;
+
+            if (gy > floorNoise) {
+                chunk.set(x, y, z, airId);
+                continue;
+            }
 
             var noise = SimplexNoise.noise3_ImproveXY(seed, gx * FREQUENCY, gy * FREQUENCY, gz * FREQUENCY);
             var noiseAbove = SimplexNoise.noise3_ImproveXY(seed, gx * FREQUENCY, (gy + 1) * FREQUENCY, gz * FREQUENCY);

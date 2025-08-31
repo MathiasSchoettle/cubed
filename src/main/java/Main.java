@@ -85,7 +85,7 @@ public class Main {
 
 
         // setup camera controller
-        cameraController = new CameraController(new Camera(Vec3.of(0, 0, 5), Vec3.of(0, 0, -1)), inputHandler, delta);
+        cameraController = new CameraController(new Camera(Vec3.of(0, 20, 0), Vec3.of(0, 0, -1)), inputHandler, delta);
 
         // init shader
         shaderManager = new ShaderManager(new ProgramHandler(), fileLoader);
@@ -131,8 +131,8 @@ public class Main {
             shaderManager.update();
             cameraController.update();
             inputHandler.update();
-            chunkManager.update();
 
+            chunkManager.remesh();
             chunkManager.draw();
 
             glfwSwapBuffers(window);

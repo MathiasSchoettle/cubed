@@ -106,7 +106,7 @@ public class ChunkManager {
         }
     }
 
-    public void update() {
+    public void remesh() {
         for (var entry : chunkMap.entrySet()) {
             if (entry.getValue().needsRemesh) {
                 var key = entry.getKey();

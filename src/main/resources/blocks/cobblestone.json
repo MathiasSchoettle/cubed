@@ -1,0 +1,7 @@
+{
+  "name": "base:cobblestone",
+  "opaque": true,
+  "texture": {
+    "all": "cobblestone.png"
+  }
+}

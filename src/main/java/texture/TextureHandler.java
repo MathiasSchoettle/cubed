@@ -63,4 +63,8 @@ public class TextureHandler {
     public Optional<Integer> getId(String name) {
         return Optional.of(textureIds.get(name));
     }
+
+    public void bind(String name) {
+        getId(name).ifPresent((id) -> glBindTexture(GL_TEXTURE_2D_ARRAY, id));
+    }
 }

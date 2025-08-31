@@ -2,6 +2,6 @@
   "name": "base:stone",
   "opaque": true,
   "texture": {
-    "all": "cobblestone.png"
+    "all": "stone.png"
   }
 }

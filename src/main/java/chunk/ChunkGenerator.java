@@ -21,17 +21,37 @@ public class ChunkGenerator {
 
     public Chunk generate(ChunkKey key) {
         var chunk = new Chunk();
+
+        // TODO these values could be stored on creation
         var airId = blockProvider.getBlockId("base:air");
         var dirtId = blockProvider.getBlockId("base:dirt");
+        var grassId = blockProvider.getBlockId("base:grass");
+        var stoneId = blockProvider.getBlockId("base:stone");
+        var cobblestone = blockProvider.getBlockId("base:cobblestone");
 
         for (int x = 0; x < CHUNK_SIZE; ++x) for (int y = 0; y < CHUNK_SIZE; ++y) for (int z = 0; z < CHUNK_SIZE; ++z) {
-            if (SimplexNoise.noise3_ImproveXY(
-                    seed,
-                    (key.x() * CHUNK_SIZE + x) * FREQUENCY,
-                    (key.y() * CHUNK_SIZE + y) * FREQUENCY,
-                    (key.z() * CHUNK_SIZE + z) * FREQUENCY
-            ) > 0) {
-                chunk.set(x, y, z, dirtId);
+
+            int gx = (key.x() * CHUNK_SIZE) + x;
+            int gy = (key.y() * CHUNK_SIZE) + y;
+            int gz = (key.z() * CHUNK_SIZE) + z;
+
+            var noise = SimplexNoise.noise3_ImproveXY(seed, gx * FREQUENCY, gy * FREQUENCY, gz * FREQUENCY);
+            var noiseAbove = SimplexNoise.noise3_ImproveXY(seed, gx * FREQUENCY, (gy + 1) * FREQUENCY, gz * FREQUENCY);
+
+            if (noise > 0) {
+                if (gy < 10) {
+                    if (noise < 0.5) {
+                        chunk.set(x, y, z, stoneId);
+                    } else {
+                        chunk.set(x,y ,z, cobblestone);
+                    }
+                } else {
+                    if (noiseAbove > 0) {
+                        chunk.set(x, y, z, dirtId);
+                    } else {
+                        chunk.set(x, y, z, grassId);
+                    }
+                }
             } else {
                 chunk.set(x, y, z, airId);
             }

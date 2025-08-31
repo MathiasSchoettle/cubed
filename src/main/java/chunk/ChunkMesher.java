@@ -1,6 +1,7 @@
 package chunk;
 
 import block.BlockProvider;
+import block.BlockSide;
 import chunk.data.Chunk;
 import chunk.data.ChunkKey;
 import utils.data.FloatArray;
@@ -30,7 +31,7 @@ public class ChunkMesher {
     }
 
     /**
-     * @param neighbours -X, +X, -Y, +Y, -Z, +Z
+     * @param neighbours -X, +X, -Y, +Y, -Z, +Z TODO make this consistent, normally we do +x, -x, +y, -y, +z, -z
      */
     public void mesh(ChunkKey key, Chunk chunk, Chunk[] neighbours) {
 
@@ -51,11 +52,13 @@ public class ChunkMesher {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.data, GL_STATIC_DRAW);
 
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 8 * Float.BYTES, 0L);
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, 9 * Float.BYTES, 0L);
         glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, false, 8 * Float.BYTES, 3L * Float.BYTES);
+        glVertexAttribPointer(1, 3, GL_FLOAT, false, 9 * Float.BYTES, 3L * Float.BYTES);
         glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, false, 8 * Float.BYTES, 6L * Float.BYTES);
+        glVertexAttribPointer(2, 2, GL_FLOAT, false, 9 * Float.BYTES, 6L * Float.BYTES);
+        glEnableVertexAttribArray(3);
+        glVertexAttribPointer(3, 1, GL_FLOAT, false, 9 * Float.BYTES, 8L * Float.BYTES);
 
         glBindVertexArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -86,7 +89,10 @@ public class ChunkMesher {
         var airId = blockProvider.getBlockId("base:air");
 
         for (int x = 0; x < CHUNK_SIZE; ++x) for (int y = 0; y < CHUNK_SIZE; ++y) for (int z = 0; z < CHUNK_SIZE; ++z) {
-            if (chunk.get(x, y, z) == airId) {
+
+            var blockId = chunk.get(x, y, z);
+
+            if (blockId == airId) {
                 continue;
             }
 
@@ -109,7 +115,7 @@ public class ChunkMesher {
                     continue;
                 }
 
-                int base = vertices.size() / 8;
+                int base = vertices.size() / 9;
 
                 for (int cornerIndex = 0; cornerIndex < 4; ++cornerIndex) {
                     // positions
@@ -126,6 +132,11 @@ public class ChunkMesher {
                     // texture coordinates
                     var uvs = UV_OFFSETS[direction][cornerIndex];
                     vertices.push(uvs[0]).push(uvs[1]);
+
+                    // texture layer
+                    var side = BlockSide.values()[direction];
+                    var textureIndex = blockProvider.getTextureIndex(blockId, side);
+                    vertices.push(textureIndex);
                 }
 
                 indices
@@ -182,13 +193,18 @@ public class ChunkMesher {
             {{0,0,1},{0,1,1},{1,1,1},{1,0,1}}, // +Z
             {{0,0,0},{1,0,0},{1,1,0},{0,1,0}}  // -Z
     };
+    // NOTE: I just permutated these values until the textures looked correct
+    // it is very likely that there is a bug somewhere else and the permutation just masks it. Does it really matter?
+    // maybe...
     float[][][] UV_OFFSETS = {
-            { {0,0}, {1,0}, {1,1}, {0,1} }, // +X
-            { {1,0}, {0,0}, {0,1}, {1,1} }, // -X (flipped horizontally)
-            { {0,1}, {1,1}, {1,0}, {0,0} }, // +Y (flipped vertically)
+            { {1,1}, {0,1}, {0,0}, {1,0} }, // +X
+            { {1,1}, {1,0}, {0,0}, {0,1} }, // -X
+
+            { {0,1}, {1,1}, {1,0}, {0,0} }, // +Y
             { {0,0}, {1,0}, {1,1}, {0,1} }, // -Y
-            { {0,0}, {1,0}, {1,1}, {0,1} }, // +Z
-            { {0,0}, {1,0}, {1,1}, {0,1} }, // -Z
+
+            { {0,1}, {0,0}, {1,0}, {1,1} }, // +Z
+            { {1,1}, {0,1}, {0,0}, {1,0} }, // -Z
     };
 
     // TODO think about this

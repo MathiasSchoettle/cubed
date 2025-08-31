@@ -13,7 +13,6 @@ import shader.ProgramHandler;
 import shader.ShaderManager;
 import shader.uniform.Uniforms;
 import texture.TextureHandler;
-import texture.TextureManager;
 import utils.filesystem.FileLoader;
 
 import java.util.List;
@@ -38,9 +37,9 @@ public class Main {
 
     private Sun sun;
 
-    private TextureManager textureManager;
-
     private ChunkManager chunkManager;
+
+    private TextureHandler textureHandler;
 
     public void run() {
         init();
@@ -80,6 +79,8 @@ public class Main {
         // delta time calculator
         delta = new Delta();
 
+        FileLoader fileLoader = new FileLoader();
+
         camera = new Camera(Vec3.of(0, 0, 5), Vec3.of(0, 0, -1));
 
         // get initial mouse pos
@@ -104,7 +105,7 @@ public class Main {
         inputHandler.registerResizeCallback((width, height) -> camera.setAspect(width, height));
 
         // init shader
-        shaderManager = new ShaderManager(new ProgramHandler(), new FileLoader());
+        shaderManager = new ShaderManager(new ProgramHandler(), fileLoader);
         shaderManager.register("simple", "simple.vs", "simple.fs");
 
         sun = new Sun(
@@ -120,15 +121,13 @@ public class Main {
         uniforms.integer("textures", () -> 0);
 
         // setup block provider
-        var blockLoader = new BlockLoader(new FileLoader());
+        var blockLoader = new BlockLoader(fileLoader);
         var blockProvider = new BlockProvider(blockLoader.loadBlocks());
 
-        textureManager = new TextureManager(new TextureHandler(), new FileLoader(), "/textures");
-        textureManager.loadTextureArray(
-                "blocks",
-                16, 16,
-                blockProvider.getTextures()
-        );
+        // setup textures
+        textureHandler = new TextureHandler();
+        List<int[]> list = blockProvider.getTextures().stream().flatMap(name -> fileLoader.pixels("/textures/" + name).stream()).toList();
+        textureHandler.loadTextureArray("blocks", 16, 16, list);
 
         // setup chunk manager
         var chunkStorage = new ChunkStorage();
@@ -140,11 +139,14 @@ public class Main {
     private void loop() {
         glClearColor(0f, 0f, 0f, 1f);
 
-        for (int x = 0; x < 4; ++x) for (int y = 0; y < 2; ++y) for (int z = 0; z < 4; ++z) {
+        for (int x = 0; x < 4; ++x) for (int y = 0; y < 3; ++y) for (int z = 0; z < 4; ++z) {
             chunkManager.load(new ChunkKey(x, y, z));
         }
 
         chunkManager.mesh();
+
+        glActiveTexture(GL_TEXTURE0);
+        textureHandler.bind("blocks");
 
         while ( !glfwWindowShouldClose(window) ) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -154,9 +156,6 @@ public class Main {
             camera.update();
             inputHandler.update();
             sun.update(delta.delta());
-
-            glActiveTexture(GL_TEXTURE0);
-            textureManager.bind("blocks");
 
             chunkManager.draw();
 

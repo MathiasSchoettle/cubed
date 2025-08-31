@@ -27,6 +27,16 @@ public class FileLoader {
         return wrapInTry(() -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(filename))));
     }
 
+    public Optional<int[]> pixels(String filename) {
+        return image(filename).map(image -> image.getRGB(
+                0, 0,
+                image.getWidth(), image.getHeight(),
+                null,
+                0,
+                image.getWidth())
+        );
+    }
+
     public List<String> listFiles(String filename) {
         return wrapInTry(() -> getClass().getClassLoader().getResource(filename))
                 .flatMap(url -> wrapInTry(url::toURI))

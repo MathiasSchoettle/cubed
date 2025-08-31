@@ -16,7 +16,7 @@ public class BlockProvider {
     private final List<String> textures = new ArrayList<>();
 
     // store texture offsets for each side of a given block id
-    // -X, +X, -Y, +Y, -Z, +Z
+    // +X, -X, +Y, -Y, +Z, -Z
     private final Map<Short, short[]> textureOffsets;
 
     private static final short INVALID_BLOCK_ID = -1;
@@ -69,7 +69,7 @@ public class BlockProvider {
                 var topIndex = (short) textures.indexOf(t.top());
                 var sideIndex = (short) textures.indexOf(t.side());
                 var bottomIndex = (short) textures.indexOf(t.bottom());
-                yield new short[] { sideIndex, sideIndex, bottomIndex, topIndex, sideIndex, sideIndex };
+                yield new short[] { sideIndex, sideIndex, topIndex, bottomIndex, sideIndex, sideIndex };
             }
             case NoTextureMeta ignore -> INVALID_TEXTURE_OFFSETS;
         };

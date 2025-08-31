@@ -1,3 +1,4 @@
+import block.BlockLoader;
 import block.BlockProvider;
 import camera.Camera;
 import camera.CameraMovement;
@@ -76,13 +77,6 @@ public class Main {
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
 
-        textureManager = new TextureManager(new TextureHandler(), new FileLoader(), "/textures");
-        textureManager.loadTextureArray(
-                "blocks",
-                16, 16,
-                List.of("cobblestone.png", "dirt.png", "sand.png")
-            );
-
         // delta time calculator
         delta = new Delta();
 
@@ -126,8 +120,15 @@ public class Main {
         uniforms.integer("textures", () -> 0);
 
         // setup block provider
-        // TODO
-        var blockProvider = new BlockProvider(List.of());
+        var blockLoader = new BlockLoader(new FileLoader());
+        var blockProvider = new BlockProvider(blockLoader.loadBlocks());
+
+        textureManager = new TextureManager(new TextureHandler(), new FileLoader(), "/textures");
+        textureManager.loadTextureArray(
+                "blocks",
+                16, 16,
+                blockProvider.getTextures()
+        );
 
         // setup chunk manager
         var chunkStorage = new ChunkStorage();

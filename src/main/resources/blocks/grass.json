@@ -3,7 +3,7 @@
   "opaque": true,
   "texture": {
     "top": "grass.png",
-    "side": "dirt.png",
+    "side": "grass_side.png",
     "bottom": "dirt.png"
   }
 }

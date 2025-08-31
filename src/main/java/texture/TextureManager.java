@@ -21,6 +21,8 @@ public class TextureManager {
         this.pathPrefix = pathPrefix;
     }
 
+    // TODO this should not be responsible for loading the files, it should get the data as pixels already
+    //  maybe this entire class is obsolete?
     public void loadTextureArray(String name, int width, int height, List<String> textureFiles) {
 
         if (textureFiles.isEmpty()) {
@@ -47,6 +49,7 @@ public class TextureManager {
             incorrectImages.forEach(image -> System.err.println(image.getWidth() + " - " + image.getHeight()));
             return;
         }
+        // TODO this should be done somewhere else
 
         var textureData = images.stream()
                 .map(image -> image.getRGB(0, 0, width, height, null, 0, width))

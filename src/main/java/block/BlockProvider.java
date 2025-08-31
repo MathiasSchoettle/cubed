@@ -86,9 +86,9 @@ public class BlockProvider {
          return data != null ? data.id : INVALID_BLOCK_ID;
     }
 
-    public int getTextureIndex(short blockId, BlockSide side) {
+    public int getTextureIndex(short blockId, int direction) {
         short[] offsets = textureOffsets.getOrDefault(blockId, INVALID_TEXTURE_OFFSETS);
-        return offsets[side.index];
+        return offsets[direction];
     }
 
     public List<String> getTextures() {

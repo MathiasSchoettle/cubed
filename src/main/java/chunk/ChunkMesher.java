@@ -1,7 +1,6 @@
 package chunk;
 
 import block.BlockProvider;
-import block.BlockSide;
 import chunk.data.Chunk;
 import chunk.data.ChunkKey;
 import utils.data.FloatArray;
@@ -134,8 +133,7 @@ public class ChunkMesher {
                     vertices.push(uvs[0]).push(uvs[1]);
 
                     // texture layer
-                    var side = BlockSide.values()[direction];
-                    var textureIndex = blockProvider.getTextureIndex(blockId, side);
+                    var textureIndex = blockProvider.getTextureIndex(blockId, direction);
                     vertices.push(textureIndex);
                 }
 

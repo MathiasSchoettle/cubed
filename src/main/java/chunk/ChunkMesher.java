@@ -36,6 +36,11 @@ public class ChunkMesher {
         // clear existing buffers on gpu
         remove(key); // TODO: have a look at glBufferSubData, if we can reuse same objects even if amount of vertices change?
 
+        if (vertices.size() == 0 && indices.size() == 0) {
+            // don't generate mesh for chunk which has no vertex data (it probably is just air)
+            return;
+        }
+
         var vao = glGenVertexArrays();
         glBindVertexArray(vao);
 
@@ -68,7 +73,7 @@ public class ChunkMesher {
     }
 
     public void remove(ChunkKey key) {
-        var existing = chunkReferences.get(key);
+        var existing = chunkReferences.remove(key);
         if (existing != null) {
             glDeleteVertexArrays(existing.vao);
             glDeleteBuffers(existing.vbo);

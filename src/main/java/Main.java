@@ -111,11 +111,6 @@ public class Main {
         var chunkGenerator = new ChunkGenerator(1, blockProvider);
         var chunkMesher = new ChunkMesher(blockProvider);
         chunkManager = new ChunkManager(chunkStorage, chunkGenerator, chunkMesher, shaderManager, uniforms);
-
-        // create these chunks
-        for (int x = 0; x < 2; ++x) for (int y = 0; y < 2; ++y) for (int z = 0; z < 2; ++z) {
-            chunkManager.load(new ChunkKey(x, y, z));
-        }
     }
 
     private void loop() {
@@ -132,7 +127,7 @@ public class Main {
             cameraController.update();
             inputHandler.update();
 
-            chunkManager.remesh();
+            chunkManager.update(cameraController.camera().position);
             chunkManager.draw();
 
             glfwSwapBuffers(window);

@@ -3,11 +3,12 @@ package chunk;
 import chunk.data.ChunkData;
 import chunk.data.ChunkKey;
 import math.mat.Mat4;
+import math.vec.IVec3;
+import math.vec.Vec3;
 import shader.ShaderManager;
 import shader.uniform.Uniforms;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static chunk.data.Chunk.CHUNK_SIZE;
 import static org.lwjgl.opengl.GL11.*;
@@ -29,6 +30,9 @@ public class ChunkManager {
     private final Uniforms uniforms;
 
     private final Map<ChunkKey, ChunkData> chunkMap = new HashMap<>();
+
+    private final IVec3 chunkPosition = IVec3.of(0);
+    private static final int RENDER_DISTANCE = 5;
 
     // TODO shader manager and uniforms are temporary
     public ChunkManager(ChunkStorage storage, ChunkGenerator generator, ChunkMesher mesher, ShaderManager shaderManager, Uniforms uniforms) {
@@ -106,6 +110,35 @@ public class ChunkManager {
         }
     }
 
+    public void update(Vec3 position) {
+        var newPos = IVec3.of(
+                (int) (position.x / CHUNK_SIZE),
+                (int) (position.y / CHUNK_SIZE),
+                (int) (position.z / CHUNK_SIZE)
+        );
+
+        if (!chunkPosition.equals(newPos)) {
+
+            chunkPosition.set(newPos);
+
+            var toRemove = new HashSet<>(chunkMap.keySet().stream().toList());
+
+            for (int x = -RENDER_DISTANCE; x <= RENDER_DISTANCE; x++) for (int y = -RENDER_DISTANCE; y <= RENDER_DISTANCE; y++) for (int z = -RENDER_DISTANCE; z <= RENDER_DISTANCE; z++) {
+                var key = new ChunkKey(chunkPosition.x + x, chunkPosition.y + y, chunkPosition.z + z);
+                toRemove.remove(key);
+            }
+
+            toRemove.forEach(this::unload);
+
+            for (int x = -RENDER_DISTANCE; x <= RENDER_DISTANCE; x++) for (int y = -RENDER_DISTANCE; y <= RENDER_DISTANCE; y++) for (int z = -RENDER_DISTANCE; z <= RENDER_DISTANCE; z++) {
+                var key = new ChunkKey(chunkPosition.x + x, chunkPosition.y + y, chunkPosition.z + z);
+                load(key);
+            }
+        }
+
+        remesh();
+    }
+
     public void remesh() {
         for (var entry : chunkMap.entrySet()) {
             if (entry.getValue().needsRemesh) {
@@ -134,11 +167,9 @@ public class ChunkManager {
         for (var entry : chunkMap.entrySet()) {
             var optionalData = mesher.getData(entry.getKey());
 
-            this.modelMatrix.set(entry.getValue().modelMatrix);
-
-            shaderManager.use("simple", uniforms);
-
             optionalData.ifPresent(data -> {
+                this.modelMatrix.set(entry.getValue().modelMatrix);
+                shaderManager.use("simple", uniforms);
                 glBindVertexArray(data.vao());
                 glDrawElements(GL_TRIANGLES, data.indexCount(), GL_UNSIGNED_SHORT, 0L);
             });

@@ -12,7 +12,7 @@ import shader.ProgramHandler;
 import shader.ShaderManager;
 import shader.uniform.Uniforms;
 import texture.TextureHandler;
-import utils.Delta;
+import utils.time.Delta;
 import utils.filesystem.FileLoader;
 
 import java.util.List;

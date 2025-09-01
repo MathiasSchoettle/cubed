@@ -1,7 +1,7 @@
 package camera;
 
 import input.InputHandler;
-import utils.Delta;
+import utils.time.Delta;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;

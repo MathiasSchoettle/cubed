@@ -5,7 +5,6 @@ import block.meta.BlockMeta;
 import block.meta.DefaultTextureMeta;
 import block.meta.NoTextureMeta;
 
-import java.lang.instrument.UnmodifiableClassException;
 import java.util.*;
 
 public class BlockProvider {

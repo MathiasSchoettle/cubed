@@ -164,6 +164,8 @@ public class ChunkManager {
     // TODO temporary
     public void draw() {
 
+        mesher.tick();
+
         for (var entry : chunkMap.entrySet()) {
             var optionalData = mesher.getData(entry.getKey());
 

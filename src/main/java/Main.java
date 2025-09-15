@@ -3,7 +3,7 @@ import block.BlockProvider;
 import camera.Camera;
 import camera.CameraController;
 import chunk.*;
-import chunk.data.ChunkKey;
+import environment.Cubemap;
 import input.InputHandler;
 import math.vec.Vec3;
 import org.lwjgl.glfw.*;
@@ -16,6 +16,7 @@ import utils.time.Delta;
 import utils.filesystem.FileLoader;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -36,6 +37,8 @@ public class Main {
     private CameraController cameraController;
 
     private ChunkManager chunkManager;
+
+    private Cubemap cubemap;
 
     private TextureHandler textureHandler;
 
@@ -75,6 +78,7 @@ public class Main {
 
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
+        glDepthFunc(GL_LEQUAL);
 
         // delta time calculator
         delta = new Delta();
@@ -82,7 +86,6 @@ public class Main {
         // setup input handler
         inputHandler = new InputHandler(window);
         inputHandler.registerResizeCallback((width, height) -> glViewport(0, 0, width, height));
-
 
         // setup camera controller
         cameraController = new CameraController(new Camera(Vec3.of(0, 20, 0), Vec3.of(0, 0, -1)), inputHandler, delta);
@@ -106,6 +109,14 @@ public class Main {
         List<int[]> pixels = blockProvider.getTextures().stream().flatMap(name -> fileLoader.pixels("/textures/" + name).stream()).toList();
         textureHandler.loadTextureArray("blocks", 16, 16, pixels);
 
+        // setup cubemap
+        shaderManager.register("cubemap", "cubemap.vs", "cubemap.fs");
+        var cubemapData = Stream.of("front.jpg", "back.jpg", "top.jpg", "bottom.jpg", "left.jpg", "right.jpg")
+                .map(name -> "/textures/cubemap/test/" + name)
+                .flatMap(filename -> fileLoader.pixels(filename).stream()).toList();
+        textureHandler.loadCubemap("cubemap", 2048, cubemapData);
+        cubemap = new Cubemap();
+
         // setup chunk manager
         var chunkStorage = new ChunkStorage();
         var chunkGenerator = new ChunkGenerator(1, blockProvider);
@@ -116,8 +127,16 @@ public class Main {
     private void loop() {
         glClearColor(0f, 0f, 0f, 1f);
 
+        // this is probably going to break
         glActiveTexture(GL_TEXTURE0);
         textureHandler.bind("blocks");
+        textureHandler.bind("cubemap");
+
+        // somewhere else
+        Uniforms cubemapUniforms = new Uniforms();
+        cubemapUniforms.mat4("projection", cameraController.camera().getProjectionMatrix());
+        cubemapUniforms.mat4("view", cameraController.camera().getCubemapViewMatrix());
+        cubemapUniforms.integer("skybox", () -> 0);
 
         while ( !glfwWindowShouldClose(window) ) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -129,6 +148,9 @@ public class Main {
 
             chunkManager.update(cameraController.camera().position);
             chunkManager.draw();
+
+            shaderManager.use("cubemap", cubemapUniforms);
+            cubemap.render();
 
             glfwSwapBuffers(window);
             glfwPollEvents();

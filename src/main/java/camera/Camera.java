@@ -14,6 +14,8 @@ public class Camera {
 
     private final Mat4 projectionMatrix = Mat4.of(0);
     private final Mat4 viewMatrix = Mat4.of(0);
+    // FIXME where to put this?
+    private final Mat4 cubemapViewMatrix = Mat4.of(0);
 
     private final float FOV = (float) Math.toRadians(90);
     private final float NEAR = 0.01f;
@@ -85,6 +87,22 @@ public class Camera {
         viewMatrix.values[13] = -up.dot(position);
         viewMatrix.values[14] = direction.dot(position);
         viewMatrix.values[15] = 1;
+
+        cubemapViewMatrix.values[0] = right.x;
+        cubemapViewMatrix.values[1] = up.x;
+        cubemapViewMatrix.values[2] = -direction.x;
+
+        cubemapViewMatrix.values[4] = right.y;
+        cubemapViewMatrix.values[5] = up.y;
+        cubemapViewMatrix.values[6] = -direction.y;
+
+        cubemapViewMatrix.values[8] = right.z;
+        cubemapViewMatrix.values[9] = up.z;
+        cubemapViewMatrix.values[10] = -direction.z;
+    }
+
+    public Mat4 getCubemapViewMatrix() {
+        return cubemapViewMatrix;
     }
 
     public Mat4 getViewMatrix() {

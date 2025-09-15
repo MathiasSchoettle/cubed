@@ -3,6 +3,7 @@ import block.BlockProvider;
 import camera.Camera;
 import camera.CameraController;
 import chunk.*;
+import chunk.generate.ChunkGenerator;
 import environment.Cubemap;
 import input.InputHandler;
 import math.vec.Vec3;
@@ -162,6 +163,8 @@ public class Main {
             glfwSwapBuffers(window);
             glfwPollEvents();
         }
+
+        taskHandler.shutdown();
     }
 
     public static void main(String[] args) {

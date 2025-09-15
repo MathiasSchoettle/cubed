@@ -2,6 +2,7 @@ package chunk;
 
 import chunk.data.ChunkData;
 import chunk.data.ChunkKey;
+import chunk.generate.ChunkGenerator;
 import math.mat.Mat4;
 import math.vec.IVec3;
 import math.vec.Vec3;

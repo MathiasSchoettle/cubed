@@ -1,4 +1,4 @@
-package chunk;
+package chunk.generate;
 
 import block.BlockProvider;
 import chunk.data.Chunk;

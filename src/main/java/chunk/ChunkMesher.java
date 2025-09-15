@@ -3,13 +3,12 @@ package chunk;
 import block.BlockProvider;
 import chunk.data.ChunkData;
 import chunk.data.ChunkKey;
+import threading.TaskHandler;
 import utils.data.FloatArray;
 import utils.data.ShortArray;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static chunk.data.Chunk.CHUNK_SIZE;
@@ -20,18 +19,18 @@ import static org.lwjgl.opengl.GL30.*;
 
 public class ChunkMesher {
 
+    private final TaskHandler taskHandler;
+
     private final BlockProvider blockProvider;
 
     private final Map<ChunkKey, ChunkGpuData> chunkReferences = new HashMap<>();
-
-    // FIXME: shutdown this somewhere, should also not be part of mesher directly i suppose
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     private final Map<ChunkKey, Future<Tuple<ShortArray, FloatArray>>> futures = new HashMap<>();
 
     private final short airId;
 
-    public ChunkMesher(BlockProvider blockProvider) {
+    public ChunkMesher(TaskHandler taskHandler, BlockProvider blockProvider) {
+        this.taskHandler = taskHandler;
         this.blockProvider = blockProvider;
         this.airId = blockProvider.getBlockId("base:air");
     }
@@ -39,7 +38,7 @@ public class ChunkMesher {
     record Tuple<A, B>(A first, B second) {}
 
     public void mesh(ChunkKey key, ChunkData chunkData) {
-        var future = executorService.submit(() -> {
+        var future = taskHandler.submitMeshingTask(() -> {
             var indices = new ShortArray();
             var vertices = new FloatArray();
 

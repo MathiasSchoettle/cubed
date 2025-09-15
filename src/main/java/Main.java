@@ -12,10 +12,12 @@ import shader.ProgramHandler;
 import shader.ShaderManager;
 import shader.uniform.Uniforms;
 import texture.TextureHandler;
+import threading.TaskHandler;
 import utils.time.Delta;
 import utils.filesystem.FileLoader;
 
 import java.util.List;
+import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
 import static org.lwjgl.glfw.Callbacks.*;
@@ -43,6 +45,8 @@ public class Main {
     private TextureHandler textureHandler;
 
     private final FileLoader fileLoader = new FileLoader();
+
+    private TaskHandler taskHandler;
 
     public void run() {
         init();
@@ -79,6 +83,9 @@ public class Main {
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
         glDepthFunc(GL_LEQUAL);
+
+        // setup task handler
+        taskHandler = new TaskHandler(Executors.newSingleThreadExecutor());
 
         // delta time calculator
         delta = new Delta();
@@ -120,7 +127,7 @@ public class Main {
         // setup chunk manager
         var chunkStorage = new ChunkStorage();
         var chunkGenerator = new ChunkGenerator(1, blockProvider);
-        var chunkMesher = new ChunkMesher(blockProvider);
+        var chunkMesher = new ChunkMesher(taskHandler, blockProvider);
         chunkManager = new ChunkManager(chunkStorage, chunkGenerator, chunkMesher, shaderManager, uniforms);
     }
 

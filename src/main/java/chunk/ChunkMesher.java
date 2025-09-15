@@ -24,6 +24,7 @@ public class ChunkMesher {
 
     private final Map<ChunkKey, ChunkGpuData> chunkReferences = new HashMap<>();
 
+    // FIXME: shutdown this somewhere, should also not be part of mesher directly i suppose
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     private final Map<ChunkKey, Future<Tuple<ShortArray, FloatArray>>> futures = new HashMap<>();

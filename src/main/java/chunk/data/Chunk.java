@@ -20,4 +20,22 @@ public class Chunk {
         assert z >= 0 && z < CHUNK_SIZE;
         blockData[x + y * CHUNK_SIZE + z * SLICE_SIZE] = value;
     }
+
+    public boolean trySet(int x, int y, int z, short value) {
+        if (
+            x >= 0 && x < CHUNK_SIZE &&
+            y >= 0 && y < CHUNK_SIZE &&
+            z >= 0 && z < CHUNK_SIZE
+        ) {
+            set(x, y, z, value);
+            return true;
+        }
+        return false;
+    }
+
+    public static Chunk copy(Chunk chunk) {
+        var newChunk = new Chunk();
+        System.arraycopy(chunk.blockData, 0, newChunk.blockData, 0, chunk.blockData.length);
+        return newChunk;
+    }
 }

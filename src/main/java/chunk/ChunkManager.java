@@ -2,7 +2,8 @@ package chunk;
 
 import chunk.data.ChunkData;
 import chunk.data.ChunkKey;
-import chunk.generate.ChunkGenerator;
+import chunk.generate.ChunkGeneration;
+import chunk.generate.ChunkPosition;
 import math.mat.Mat4;
 import math.vec.IVec3;
 import math.vec.Vec3;
@@ -19,7 +20,7 @@ public class ChunkManager {
 
     private final ChunkStorage storage;
 
-    private final ChunkGenerator generator;
+    private final ChunkGeneration generator;
 
     private final ChunkMesher mesher;
 
@@ -33,10 +34,10 @@ public class ChunkManager {
     private final Map<ChunkKey, ChunkData> chunkMap = new HashMap<>();
 
     private final IVec3 chunkPosition = IVec3.of(0);
-    private static final int RENDER_DISTANCE = 5;
+    private static final int RENDER_DISTANCE = 12;
 
     // TODO shader manager and uniforms are temporary
-    public ChunkManager(ChunkStorage storage, ChunkGenerator generator, ChunkMesher mesher, ShaderManager shaderManager, Uniforms uniforms) {
+    public ChunkManager(ChunkStorage storage, ChunkGeneration generator, ChunkMesher mesher, ShaderManager shaderManager, Uniforms uniforms) {
         this.storage = storage;
         this.generator = generator;
         this.mesher = mesher;
@@ -49,7 +50,7 @@ public class ChunkManager {
         if (chunkMap.containsKey(key)) {
             return;
         }
-        var chunk = storage.load(key).orElseGet(() -> generator.generate(key));
+        var chunk = storage.load(key).orElseGet(() -> generator.generate(new ChunkPosition(key.x(), key.y(), key.z())));
         var data = new ChunkData(chunk, getModelMatrix(key));
         setNeighbours(key, data);
         chunkMap.put(key, data);

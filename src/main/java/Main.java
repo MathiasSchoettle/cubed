@@ -3,7 +3,9 @@ import block.BlockProvider;
 import camera.Camera;
 import camera.CameraController;
 import chunk.*;
-import chunk.generate.ChunkGenerator;
+import chunk.generate.ChunkGeneration;
+import chunk.generate.test.GrassStage;
+import chunk.generate.test.TerrainStage;
 import environment.Cubemap;
 import input.InputHandler;
 import math.vec.Vec3;
@@ -127,9 +129,19 @@ public class Main {
 
         // setup chunk manager
         var chunkStorage = new ChunkStorage();
-        var chunkGenerator = new ChunkGenerator(1, blockProvider);
+
+        var airId = blockProvider.getBlockId("base:air");
+        var stoneId = blockProvider.getBlockId("base:stone");
+        var dirtId = blockProvider.getBlockId("base:dirt");
+        var grassId = blockProvider.getBlockId("base:grass");
+
+        var generator = ChunkGeneration.builder()
+                .addStage("terrain", new TerrainStage(1, airId, stoneId))
+                .addStage("grass", new GrassStage(airId, dirtId, grassId))
+                .build();
+
         var chunkMesher = new ChunkMesher(taskHandler, blockProvider);
-        chunkManager = new ChunkManager(chunkStorage, chunkGenerator, chunkMesher, shaderManager, uniforms);
+        chunkManager = new ChunkManager(chunkStorage, generator, chunkMesher, shaderManager, uniforms);
     }
 
     private void loop() {

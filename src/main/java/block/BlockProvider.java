@@ -31,6 +31,7 @@ public class BlockProvider {
             switch (data.texture()) {
                 case AllTextureMeta t -> addTexture(t.all());
                 case DefaultTextureMeta t -> addTexture(t.top(), t.side(), t.bottom());
+                case DetailedTextureMeta t -> addTexture(t.front(), t.back(), t.left(), t.right(), t.top(), t.bottom());
                 case NoTextureMeta ignore -> {}
             }
         }
@@ -61,6 +62,15 @@ public class BlockProvider {
                 var sideIndex = textures.indexOf(t.side());
                 var bottomIndex = textures.indexOf(t.bottom());
                 yield new int[] { sideIndex, sideIndex, topIndex, bottomIndex, sideIndex, sideIndex };
+            }
+            case DetailedTextureMeta t -> {
+                var topIndex = textures.indexOf(t.top());
+                var bottomIndex = textures.indexOf(t.bottom());
+                var leftIndex = textures.indexOf(t.left());
+                var rightIndex = textures.indexOf(t.right());
+                var frontIndex = textures.indexOf(t.front());
+                var backIndex = textures.indexOf(t.back());
+                yield new int[] {frontIndex, backIndex, topIndex, bottomIndex, leftIndex, rightIndex};
             }
             case NoTextureMeta ignore -> INVALID_TEXTURE_OFFSETS;
         };

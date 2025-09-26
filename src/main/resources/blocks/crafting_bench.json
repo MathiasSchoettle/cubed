@@ -1,0 +1,13 @@
+{
+  "name": "base:crafting_bench",
+  "opaque": true,
+  "hasMesh": true,
+  "texture": {
+    "front": "crafting_bench_front.png",
+    "back": "crafting_bench_side.png",
+    "left": "crafting_bench_side.png",
+    "right": "crafting_bench_side.png",
+    "top": "crafting_bench_top.png",
+    "bottom": "planks.png"
+  }
+}

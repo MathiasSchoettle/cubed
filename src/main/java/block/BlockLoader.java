@@ -36,7 +36,7 @@ public class BlockLoader {
                 var meta = mapper.readValue(content.get(), BlockMeta.class);
                 list.add(meta);
             } catch (IOException ignore) {
-                System.err.println("Failed reading meta of block: " + name);
+                System.err.println("Failed reading meta of block: " + name + " - " + ignore.getLocalizedMessage());
             }
         }
 

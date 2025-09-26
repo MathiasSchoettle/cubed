@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonSubTypes({
         @JsonSubTypes.Type(DefaultTextureMeta.class),
         @JsonSubTypes.Type(AllTextureMeta.class),
-        @JsonSubTypes.Type(NoTextureMeta.class)
+        @JsonSubTypes.Type(NoTextureMeta.class),
+        @JsonSubTypes.Type(DetailedTextureMeta.class)
 })
-public sealed interface TextureMeta permits DefaultTextureMeta, AllTextureMeta, NoTextureMeta {}
+public sealed interface TextureMeta permits DefaultTextureMeta, AllTextureMeta, NoTextureMeta, DetailedTextureMeta {}

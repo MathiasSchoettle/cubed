@@ -179,7 +179,7 @@ public class Main {
         taskHandler.shutdown();
     }
 
-    public static void main(String[] args) {
+    static void main() {
         new Main().run();
     }
 }

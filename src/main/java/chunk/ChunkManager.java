@@ -34,7 +34,7 @@ public class ChunkManager {
     private final Map<ChunkKey, ChunkData> chunkMap = new HashMap<>();
 
     private final IVec3 chunkPosition = IVec3.of(0);
-    private static final int RENDER_DISTANCE = 12;
+    private static final int RENDER_DISTANCE = 5;
 
     // TODO shader manager and uniforms are temporary
     public ChunkManager(ChunkStorage storage, ChunkGeneration generator, ChunkMesher mesher, ShaderManager shaderManager, Uniforms uniforms) {

@@ -25,19 +25,15 @@ public class TerrainStage implements ChunkGenerationStage {
     @Override
     public void generate(Chunk chunk, ChunkPosition position, ChunkContext context) {
 
-        if (position.y() > 0) {
-            return;
-        }
-
         for (int x = 0; x < CHUNK_SIZE; ++x) for (int y = 0; y < CHUNK_SIZE; ++y) for (int z = 0; z < CHUNK_SIZE; ++z) {
             int gx = (position.x() * CHUNK_SIZE) + x;
             int gy = (position.y() * CHUNK_SIZE) + y;
             int gz = (position.z() * CHUNK_SIZE) + z;
 
             var noise = SimplexNoise.noise2_ImproveX(seed, gx * PLATEAU_FREQUENCY, gz * PLATEAU_FREQUENCY);
-            noise *= noise * noise;
+            noise *= noise;
 
-            var floorNoise = 70 * noise - 70;
+            var floorNoise = 70 * noise;
 
             if (gy > floorNoise) {
                 chunk.set(x, y, z, airId);

@@ -6,6 +6,7 @@ import chunk.data.ChunkKey;
 import threading.TaskHandler;
 import utils.data.FloatArray;
 import utils.data.ShortArray;
+import utils.data.Tuple;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -34,8 +35,6 @@ public class ChunkMesher {
         this.blockProvider = blockProvider;
         this.airId = blockProvider.getBlockId("base:air");
     }
-
-    record Tuple<A, B>(A first, B second) {}
 
     public void mesh(ChunkKey key, ChunkData chunkData) {
         var future = taskHandler.submitMeshingTask(() -> {
@@ -117,8 +116,8 @@ public class ChunkMesher {
 
                     remove(key); // TODO: have a look at glBufferSubData, if we can reuse same objects even if amount of vertices change?
 
-                    var indices = result.first;
-                    var vertices = result.second;
+                    var indices = result.first();
+                    var vertices = result.second();
 
                     if (vertices.size() == 0 && indices.size() == 0) {
                         // don't generate mesh for chunk which has no vertex data (it probably is just air)

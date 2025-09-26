@@ -11,5 +11,10 @@ uniform sampler2DArray textures;
 void main()
 {
     vec4 tex = texture(textures, vec3(tc, layer));
+
+    if (tex.a <= 0) {
+        discard;
+    }
+
     fragColor = tex;
 }

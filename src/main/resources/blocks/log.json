@@ -1,0 +1,9 @@
+{
+  "name": "base:log",
+  "opaque": true,
+  "texture": {
+    "top": "log_top_bottom.png",
+    "side": "log_side.png",
+    "bottom": "log_top_bottom.png"
+  }
+}

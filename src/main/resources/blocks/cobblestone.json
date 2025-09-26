@@ -1,6 +1,7 @@
 {
   "name": "base:cobblestone",
   "opaque": true,
+  "hasMesh": true,
   "texture": {
     "all": "cobblestone.png"
   }

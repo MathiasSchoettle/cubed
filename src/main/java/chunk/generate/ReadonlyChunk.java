@@ -1,5 +1,6 @@
 package chunk.generate;
 
+import block.meta.BlockInfo;
 import chunk.data.Chunk;
 
 public class ReadonlyChunk {
@@ -10,7 +11,7 @@ public class ReadonlyChunk {
         this.chunk = chunk;
     }
 
-    public short get(int x, int y, int z) {
+    public BlockInfo get(int x, int y, int z) {
         return chunk.get(x, y, z);
     }
 }

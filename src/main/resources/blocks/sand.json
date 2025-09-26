@@ -1,6 +1,7 @@
 {
   "name": "base:sand",
   "opaque": true,
+  "hasMesh": true,
   "texture": {
     "all": "sand.png"
   }

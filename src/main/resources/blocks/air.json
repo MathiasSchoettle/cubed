@@ -1,5 +1,6 @@
 {
   "name": "base:air",
   "opaque": false,
+  "hasMesh": false,
   "texture": {}
 }

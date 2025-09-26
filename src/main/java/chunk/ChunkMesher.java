@@ -28,12 +28,9 @@ public class ChunkMesher {
 
     private final Map<ChunkKey, Future<Tuple<ShortArray, FloatArray>>> futures = new HashMap<>();
 
-    private final short airId;
-
     public ChunkMesher(TaskHandler taskHandler, BlockProvider blockProvider) {
         this.taskHandler = taskHandler;
         this.blockProvider = blockProvider;
-        this.airId = blockProvider.getBlockId("base:air");
     }
 
     public void mesh(ChunkKey key, ChunkData chunkData) {
@@ -43,27 +40,16 @@ public class ChunkMesher {
 
             for (int x = 0; x < CHUNK_SIZE; ++x) for (int y = 0; y < CHUNK_SIZE; ++y) for (int z = 0; z < CHUNK_SIZE; ++z) {
 
-                var blockId = chunkData.chunk.get(x, y, z);
+                var blockInfo = chunkData.chunk.get(x, y, z);
 
-                if (blockId == airId) {
+                if (!blockInfo.hasMesh()) {
                     continue;
                 }
 
                 for (int direction = 0; direction < NORMALS.length; ++direction) {
                     var directionVector = NORMALS[direction];
 
-                    var neighbourIsSolid = getBlock(
-                            x,
-                            y,
-                            z,
-                            directionVector[0],
-                            directionVector[1],
-                            directionVector[2],
-                            chunkData,
-                            airId
-                    ) != airId;
-
-                    if (neighbourIsSolid) {
+                    if (isBlockOpaque(x, y, z, directionVector[0], directionVector[1], directionVector[2], chunkData)) {
                         continue;
                     }
 
@@ -86,8 +72,7 @@ public class ChunkMesher {
                         vertices.push(uvs[0]).push(uvs[1]);
 
                         // texture layer
-                        var textureIndex = blockProvider.getTextureIndex(blockId, direction);
-                        vertices.push(textureIndex);
+                        vertices.push(blockInfo.getTextureIndex(direction));
                     }
 
                     indices
@@ -173,7 +158,7 @@ public class ChunkMesher {
         return Optional.ofNullable(data);
     }
 
-    private short getBlock(int x, int y, int z, int dx, int dy, int dz, ChunkData chunkData, short defaultId) {
+    private boolean isBlockOpaque(int x, int y, int z, int dx, int dy, int dz, ChunkData chunkData) {
         int nx = x + dx;
         int ny = y + dy;
         int nz = z + dz;
@@ -183,7 +168,7 @@ public class ChunkMesher {
                 ny >= 0 && ny < CHUNK_SIZE &&
                 nz >= 0 && nz < CHUNK_SIZE
         ) {
-            return chunkData.chunk.get(nx, ny, nz);
+            return chunkData.chunk.get(nx, ny, nz).opaque();
         }
 
         int neighbourIndex;
@@ -197,14 +182,14 @@ public class ChunkMesher {
         var neighbour = chunkData.neighbours[neighbourIndex];
 
         if (neighbour == null) {
-            return defaultId;
+            return true;
         }
 
         int cx = (nx + CHUNK_SIZE) % CHUNK_SIZE;
         int cy = (ny + CHUNK_SIZE) % CHUNK_SIZE;
         int cz = (nz + CHUNK_SIZE) % CHUNK_SIZE;
 
-        return neighbour.chunk.get(cx, cy, cz);
+        return neighbour.chunk.get(cx, cy, cz).opaque();
     }
 
     static final int[][] NORMALS = {

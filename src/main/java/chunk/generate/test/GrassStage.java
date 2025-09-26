@@ -1,5 +1,6 @@
 package chunk.generate.test;
 
+import block.meta.BlockInfo;
 import chunk.data.Chunk;
 import chunk.generate.ChunkContext;
 import chunk.generate.ChunkGenerationStage;
@@ -10,16 +11,16 @@ import static chunk.data.Chunk.CHUNK_SIZE;
 
 public class GrassStage implements ChunkGenerationStage {
 
-    private final short airId;
-    private final short dirtId;
-    private final short grassId;
+    private final BlockInfo air;
+    private final BlockInfo dirt;
+    private final BlockInfo grass;
 
     private static final int DIRT_DEPTH = 3;
 
-    public GrassStage(short airId, short dirtId, short grassId) {
-        this.airId = airId;
-        this.dirtId = dirtId;
-        this.grassId = grassId;
+    public GrassStage(BlockInfo air, BlockInfo dirt, BlockInfo grass) {
+        this.air = air;
+        this.dirt = dirt;
+        this.grass = grass;
     }
 
     @Override
@@ -29,19 +30,19 @@ public class GrassStage implements ChunkGenerationStage {
 
         for (int x = 0; x < CHUNK_SIZE; ++x) for (int y = 0; y < CHUNK_SIZE + DIRT_DEPTH; ++y) for (int z = 0; z < CHUNK_SIZE; ++z) {
 
-            boolean blockAboveIsAir = getBlock(chunk, above, x, y + 1, z) == airId;
+            boolean blockAboveIsAir = getBlockInfo(chunk, above, x, y + 1, z) == air;
 
-            if (getBlock(chunk, above, x, y, z) != airId && blockAboveIsAir) {
-                chunk.trySet(x, y, z, grassId);
+            if (getBlockInfo(chunk, above, x, y, z) != air && blockAboveIsAir) {
+                chunk.trySet(x, y, z, grass);
 
                 for (int i = 1; i < DIRT_DEPTH; ++i) {
-                    chunk.trySet(x, y - i, z, dirtId);
+                    chunk.trySet(x, y - i, z, dirt);
                 }
             }
         }
     }
 
-    private short getBlock(Chunk chunk, ReadonlyChunk above, int x, int y, int z) {
+    private BlockInfo getBlockInfo(Chunk chunk, ReadonlyChunk above, int x, int y, int z) {
         if (y < CHUNK_SIZE) {
             return chunk.get(x, y, z);
         } else {

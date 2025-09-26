@@ -1,5 +1,6 @@
 package chunk.generate.test;
 
+import block.meta.BlockInfo;
 import chunk.data.Chunk;
 import chunk.generate.ChunkContext;
 import chunk.generate.ChunkGenerationStage;
@@ -11,15 +12,15 @@ import static chunk.data.Chunk.CHUNK_SIZE;
 public class TerrainStage implements ChunkGenerationStage {
 
     private final long seed;
-    private final short airId;
-    private final short stoneId;
+    private final BlockInfo air;
+    private final BlockInfo stone;
 
     private static final double PLATEAU_FREQUENCY = 1.0 / 52.0;
 
-    public TerrainStage(long seed, short airId, short stoneId) {
+    public TerrainStage(long seed, BlockInfo air, BlockInfo stone) {
         this.seed = seed;
-        this.airId = airId;
-        this.stoneId = stoneId;
+        this.air = air;
+        this.stone = stone;
     }
 
     @Override
@@ -36,9 +37,9 @@ public class TerrainStage implements ChunkGenerationStage {
             var floorNoise = 70 * noise;
 
             if (gy > floorNoise) {
-                chunk.set(x, y, z, airId);
+                chunk.set(x, y, z, air);
             } else {
-                chunk.set(x, y, z, stoneId);
+                chunk.set(x, y, z, stone);
             }
         }
     }

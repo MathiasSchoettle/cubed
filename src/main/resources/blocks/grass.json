@@ -1,6 +1,7 @@
 {
   "name": "base:grass",
   "opaque": true,
+  "hasMesh": true,
   "texture": {
     "top": "grass.png",
     "side": "grass_side.png",

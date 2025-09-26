@@ -1,6 +1,7 @@
 {
   "name": "base:log",
   "opaque": true,
+  "hasMesh": true,
   "texture": {
     "top": "log_top_bottom.png",
     "side": "log_side.png",

@@ -1,6 +1,7 @@
 {
   "name": "base:stone",
   "opaque": true,
+  "hasMesh": true,
   "texture": {
     "all": "stone.png"
   }

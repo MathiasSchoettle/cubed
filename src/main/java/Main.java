@@ -130,14 +130,14 @@ public class Main {
         // setup chunk manager
         var chunkStorage = new ChunkStorage();
 
-        var airId = blockProvider.getBlockId("base:air");
-        var stoneId = blockProvider.getBlockId("base:stone");
-        var dirtId = blockProvider.getBlockId("base:dirt");
-        var grassId = blockProvider.getBlockId("base:grass");
+        var air = blockProvider.getBlockInfo("base:air");
+        var stone = blockProvider.getBlockInfo("base:stone");
+        var dirt = blockProvider.getBlockInfo("base:dirt");
+        var grass = blockProvider.getBlockInfo("base:grass");
 
         var generator = ChunkGeneration.builder()
-                .addStage("terrain", new TerrainStage(1, airId, stoneId))
-                .addStage("grass", new GrassStage(airId, dirtId, grassId))
+                .addStage("terrain", new TerrainStage(1, air, stone))
+                .addStage("grass", new GrassStage(air, dirt, grass))
                 .build();
 
         var chunkMesher = new ChunkMesher(taskHandler, blockProvider);

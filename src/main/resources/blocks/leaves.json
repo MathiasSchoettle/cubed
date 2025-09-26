@@ -1,6 +1,7 @@
 {
   "name": "base:leaves",
   "opaque": false,
+  "hasMesh": true,
   "texture": {
     "all": "leaves.png"
   }

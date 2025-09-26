@@ -47,10 +47,6 @@ public class FileLoader {
                 .map(Stream::toList).orElse(List.of());
     }
 
-    public static void main(String[] args) throws Exception {
-        System.out.println(new FileLoader().listFiles("blocks"));
-    }
-
     private <T> Optional<T> wrapInTry(ExceptionalSupplier<T> supplier) {
         try {
             return Optional.ofNullable(supplier.get());

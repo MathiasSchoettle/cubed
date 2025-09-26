@@ -1,6 +1,5 @@
 package chunk;
 
-import block.BlockProvider;
 import chunk.data.ChunkData;
 import chunk.data.ChunkKey;
 import threading.TaskHandler;
@@ -22,15 +21,12 @@ public class ChunkMesher {
 
     private final TaskHandler taskHandler;
 
-    private final BlockProvider blockProvider;
-
     private final Map<ChunkKey, ChunkGpuData> chunkReferences = new HashMap<>();
 
     private final Map<ChunkKey, Future<Tuple<ShortArray, FloatArray>>> futures = new HashMap<>();
 
-    public ChunkMesher(TaskHandler taskHandler, BlockProvider blockProvider) {
+    public ChunkMesher(TaskHandler taskHandler) {
         this.taskHandler = taskHandler;
-        this.blockProvider = blockProvider;
     }
 
     public void mesh(ChunkKey key, ChunkData chunkData) {

@@ -3,7 +3,7 @@ import block.BlockProvider;
 import camera.Camera;
 import camera.CameraController;
 import chunk.*;
-import chunk.generate.ChunkGeneration;
+import chunk.generate.ChunkProvider;
 import chunk.generate.test.GrassStage;
 import chunk.generate.test.TerrainStage;
 import environment.Cubemap;
@@ -88,7 +88,7 @@ public class Main {
         glDepthFunc(GL_LEQUAL);
 
         // setup task handler
-        taskHandler = new TaskHandler(Executors.newSingleThreadExecutor());
+        taskHandler = new TaskHandler(Executors.newFixedThreadPool(2), Executors.newFixedThreadPool(8));
 
         // delta time calculator
         delta = new Delta();
@@ -135,13 +135,13 @@ public class Main {
         var dirt = blockProvider.getBlockInfo("base:dirt");
         var grass = blockProvider.getBlockInfo("base:grass");
 
-        var generator = ChunkGeneration.builder()
+        var provider = ChunkProvider.builder(taskHandler)
                 .addStage("terrain", new TerrainStage(1, air, stone))
                 .addStage("grass", new GrassStage(air, dirt, grass))
                 .build();
 
         var chunkMesher = new ChunkMesher(taskHandler);
-        chunkManager = new ChunkManager(chunkStorage, generator, chunkMesher, shaderManager, uniforms);
+        chunkManager = new ChunkManager(chunkStorage, provider, chunkMesher, shaderManager, uniforms);
     }
 
     private void loop() {

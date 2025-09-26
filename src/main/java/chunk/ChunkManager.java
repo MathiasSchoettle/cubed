@@ -1,8 +1,9 @@
 package chunk;
 
+import chunk.data.Chunk;
 import chunk.data.ChunkData;
 import chunk.data.ChunkKey;
-import chunk.generate.ChunkGeneration;
+import chunk.generate.ChunkProvider;
 import chunk.generate.ChunkPosition;
 import math.mat.Mat4;
 import math.vec.IVec3;
@@ -11,6 +12,8 @@ import shader.ShaderManager;
 import shader.uniform.Uniforms;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import static chunk.data.Chunk.CHUNK_SIZE;
 import static org.lwjgl.opengl.GL11.*;
@@ -20,7 +23,9 @@ public class ChunkManager {
 
     private final ChunkStorage storage;
 
-    private final ChunkGeneration generator;
+    private final ChunkProvider provider;
+
+    private final Map<ChunkKey, Future<Chunk>> generatingChunks = new HashMap<>();
 
     private final ChunkMesher mesher;
 
@@ -34,12 +39,12 @@ public class ChunkManager {
     private final Map<ChunkKey, ChunkData> chunkMap = new HashMap<>();
 
     private final IVec3 chunkPosition = IVec3.of(0);
-    private static final int RENDER_DISTANCE = 5;
+    private static final int RENDER_DISTANCE = 25;
 
     // TODO shader manager and uniforms are temporary
-    public ChunkManager(ChunkStorage storage, ChunkGeneration generator, ChunkMesher mesher, ShaderManager shaderManager, Uniforms uniforms) {
+    public ChunkManager(ChunkStorage storage, ChunkProvider provider, ChunkMesher mesher, ShaderManager shaderManager, Uniforms uniforms) {
         this.storage = storage;
-        this.generator = generator;
+        this.provider = provider;
         this.mesher = mesher;
         this.shaderManager = shaderManager;
         this.uniforms = uniforms;
@@ -47,13 +52,11 @@ public class ChunkManager {
     }
 
     public void load(ChunkKey key) {
-        if (chunkMap.containsKey(key)) {
+        if (chunkMap.containsKey(key) || generatingChunks.containsKey(key)) {
             return;
         }
-        var chunk = storage.load(key).orElseGet(() -> generator.generate(new ChunkPosition(key.x(), key.y(), key.z())));
-        var data = new ChunkData(chunk, getModelMatrix(key));
-        setNeighbours(key, data);
-        chunkMap.put(key, data);
+
+        generatingChunks.put(key, provider.provide((new ChunkPosition(key.x(), key.y(), key.z()))));
     }
 
     // TODO do this in a single loop
@@ -134,7 +137,11 @@ public class ChunkManager {
 
             for (int x = -RENDER_DISTANCE; x <= RENDER_DISTANCE; x++) for (int y = -RENDER_DISTANCE; y <= RENDER_DISTANCE; y++) for (int z = -RENDER_DISTANCE; z <= RENDER_DISTANCE; z++) {
                 var key = new ChunkKey(chunkPosition.x + x, chunkPosition.y + y, chunkPosition.z + z);
-                load(key);
+
+                // FIXME temporarily limit chunks to this height
+                if (key.y() > -2 && key.y() < 5) {
+                    load(key);
+                }
             }
         }
 
@@ -165,6 +172,28 @@ public class ChunkManager {
 
     // TODO temporary
     public void draw() {
+
+        List<ChunkKey> completedKeys = new ArrayList<>();
+
+        for (var entry : generatingChunks.entrySet()) {
+            var future = entry.getValue();
+            var key = entry.getKey();
+
+            if (future.isDone()) {
+
+                completedKeys.add(key);
+
+                try {
+                    var data = new ChunkData(future.get(), getModelMatrix(key));
+                    setNeighbours(key, data);
+                    chunkMap.put(key, data);
+                } catch (InterruptedException | ExecutionException exception) {
+                    System.out.println("Something went wrong while accessing a generated chunk + " + key + ": " + exception.getMessage());
+                }
+            }
+        }
+
+        completedKeys.forEach(generatingChunks::remove);
 
         mesher.tick();
 

@@ -1,24 +1,26 @@
 package chunk.generate;
 
 import chunk.data.Chunk;
+import threading.TaskHandler;
 import utils.data.Tuple;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 
-public class ChunkGeneration {
+public class ChunkProvider {
 
     private final ChunkGenerator generator;
 
     private static final String INITIAL_STAGE = "_initial";
 
-    public Chunk generate(ChunkPosition position) {
-        return generator.generate(position);
-    }
+    private final TaskHandler taskHandler;
 
-    private ChunkGeneration(List<Tuple<String, ChunkGenerationStage>> stages) {
+    private ChunkProvider(List<Tuple<String, ChunkGenerationStage>> stages, TaskHandler taskHandler) {
+
+        this.taskHandler = taskHandler;
 
         var cache = new ChunkCache();
 
@@ -46,13 +48,23 @@ public class ChunkGeneration {
         this.generator = new ChunkGenerator(name, previousStage, previousContext, previousGenerator, cache);
     }
 
-    public static ChunkGenerationBuilder builder() {
-        return new ChunkGenerationBuilder();
+    public Future<Chunk> provide(ChunkPosition position) {
+        return taskHandler.submitGenerationTask(() -> generator.generate(position));
+    }
+
+    public static ChunkGenerationBuilder builder(TaskHandler handler) {
+        return new ChunkGenerationBuilder(handler);
     }
 
     public static class ChunkGenerationBuilder {
 
+        private final TaskHandler taskHandler;
+
         private final List<Tuple<String, ChunkGenerationStage>> stages = new ArrayList<>();
+
+        public ChunkGenerationBuilder(TaskHandler taskHandler) {
+            this.taskHandler = taskHandler;
+        }
 
         public ChunkGenerationBuilder addStage(String name, ChunkGenerationStage stage) {
 
@@ -68,8 +80,8 @@ public class ChunkGeneration {
             return this;
         }
 
-        public ChunkGeneration build() {
-            return new ChunkGeneration(stages);
+        public ChunkProvider build() {
+            return new ChunkProvider(stages, taskHandler);
         }
     }
 }

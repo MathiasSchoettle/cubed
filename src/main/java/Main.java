@@ -179,7 +179,7 @@ public class Main {
         taskHandler.shutdown();
     }
 
-    static void main() {
+    public static void main(String[] args) throws InterruptedException {
         new Main().run();
     }
 }

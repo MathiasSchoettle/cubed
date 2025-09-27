@@ -88,7 +88,7 @@ public class Main {
         glDepthFunc(GL_LEQUAL);
 
         // setup task handler
-        taskHandler = new TaskHandler(Executors.newFixedThreadPool(2), Executors.newFixedThreadPool(8));
+        taskHandler = new TaskHandler(Executors.newFixedThreadPool(4), Executors.newFixedThreadPool(12));
 
         // delta time calculator
         delta = new Delta();

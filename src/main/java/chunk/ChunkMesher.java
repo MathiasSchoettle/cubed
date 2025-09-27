@@ -31,6 +31,8 @@ public class ChunkMesher {
 
     public void mesh(ChunkKey key, ChunkData chunkData) {
         var future = taskHandler.submitMeshingTask(() -> {
+
+            // FIXME pre allocate this somehow?
             var indices = new ShortArray();
             var vertices = new FloatArray();
 
@@ -204,7 +206,7 @@ public class ChunkMesher {
     // NOTE: I just permutated these values until the textures looked correct
     // it is very likely that there is a bug somewhere else and the permutation just masks it. Does it really matter?
     // maybe...
-    float[][][] UV_OFFSETS = {
+    static final float[][][] UV_OFFSETS = {
             { {1,1}, {0,1}, {0,0}, {1,0} }, // +X
             { {1,1}, {1,0}, {0,0}, {0,1} }, // -X
 

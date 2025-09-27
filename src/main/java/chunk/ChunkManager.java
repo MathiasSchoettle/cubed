@@ -200,12 +200,15 @@ public class ChunkManager {
         for (var entry : chunkMap.entrySet()) {
             var optionalData = mesher.getData(entry.getKey());
 
-            optionalData.ifPresent(data -> {
-                this.modelMatrix.set(entry.getValue().modelMatrix);
-                shaderManager.use("simple", uniforms);
-                glBindVertexArray(data.vao());
-                glDrawElements(GL_TRIANGLES, data.indexCount(), GL_UNSIGNED_SHORT, 0L);
-            });
+            if (optionalData.isEmpty()) {
+                continue;
+            }
+
+            var data = optionalData.get();
+            this.modelMatrix.set(entry.getValue().modelMatrix);
+            shaderManager.use("simple", uniforms);
+            glBindVertexArray(data.vao());
+            glDrawElements(GL_TRIANGLES, data.indexCount(), GL_UNSIGNED_SHORT, 0L);
         }
 
         glBindVertexArray(0);

@@ -140,7 +140,7 @@ public class Main {
                 .addStage("grass", new GrassStage(air, dirt, grass))
                 .build();
 
-        var chunkMesher = new ChunkMesher(taskHandler);
+        var chunkMesher = new ChunkMesher(blockProvider, taskHandler);
         chunkManager = new ChunkManager(chunkStorage, provider, chunkMesher, shaderManager, uniforms);
     }
 

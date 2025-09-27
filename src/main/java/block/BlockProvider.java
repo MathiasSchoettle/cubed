@@ -6,7 +6,7 @@ import java.util.*;
 
 public class BlockProvider {
     // all registered block info records
-    private final Map<String, BlockInfo> blockInfos = new HashMap<>();
+    private final Map<Integer, BlockInfo> blockInfos = new HashMap<>();
     // list of texture file names, index corresponds to position in 2D texture array
     private final List<String> textures = new ArrayList<>();
 
@@ -47,7 +47,7 @@ public class BlockProvider {
                     data.hasMesh()
             );
 
-            blockInfos.put(data.name(), blockInfo);
+            blockInfos.put(blockInfo.id(), blockInfo);
         }
     }
 
@@ -83,7 +83,12 @@ public class BlockProvider {
     }
 
     public BlockInfo getBlockInfo(String name) {
-        return blockInfos.getOrDefault(name, INVALID_BLOCK_INFO);
+        return blockInfos.values().stream().filter(info -> info.name().equals(name)).findFirst().orElseThrow();
+
+    }
+
+    public BlockInfo getBlockInfo(int id) {
+        return blockInfos.get(id);
     }
 
     public List<String> getTextures() {

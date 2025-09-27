@@ -1,5 +1,6 @@
 package chunk;
 
+import block.BlockProvider;
 import chunk.data.ChunkData;
 import chunk.data.ChunkKey;
 import threading.TaskHandler;
@@ -19,13 +20,15 @@ import static org.lwjgl.opengl.GL30.*;
 
 public class ChunkMesher {
 
+    private final BlockProvider blockProvider;
     private final TaskHandler taskHandler;
 
     private final Map<ChunkKey, ChunkGpuData> chunkReferences = new HashMap<>();
 
     private final Map<ChunkKey, Future<Tuple<ShortArray, FloatArray>>> futures = new HashMap<>();
 
-    public ChunkMesher(TaskHandler taskHandler) {
+    public ChunkMesher(BlockProvider blockProvider, TaskHandler taskHandler) {
+        this.blockProvider = blockProvider;
         this.taskHandler = taskHandler;
     }
 
@@ -38,7 +41,7 @@ public class ChunkMesher {
 
             for (int x = 0; x < CHUNK_SIZE; ++x) for (int y = 0; y < CHUNK_SIZE; ++y) for (int z = 0; z < CHUNK_SIZE; ++z) {
 
-                var blockInfo = chunkData.chunk.get(x, y, z);
+                var blockInfo = blockProvider.getBlockInfo(chunkData.chunk.get(x, y, z));
 
                 if (!blockInfo.hasMesh()) {
                     continue;
@@ -166,7 +169,8 @@ public class ChunkMesher {
                 ny >= 0 && ny < CHUNK_SIZE &&
                 nz >= 0 && nz < CHUNK_SIZE
         ) {
-            return chunkData.chunk.get(nx, ny, nz).opaque();
+            var info = blockProvider.getBlockInfo(chunkData.chunk.get(nx, ny, nz));
+            return info.opaque();
         }
 
         int neighbourIndex;
@@ -187,7 +191,8 @@ public class ChunkMesher {
         int cy = (ny + CHUNK_SIZE) % CHUNK_SIZE;
         int cz = (nz + CHUNK_SIZE) % CHUNK_SIZE;
 
-        return neighbour.chunk.get(cx, cy, cz).opaque();
+        var info = blockProvider.getBlockInfo(neighbour.chunk.get(cx, cy, cz));
+        return info.opaque();
     }
 
     static final int[][] NORMALS = {

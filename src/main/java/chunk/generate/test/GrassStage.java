@@ -30,19 +30,19 @@ public class GrassStage implements ChunkGenerationStage {
 
         for (int x = 0; x < CHUNK_SIZE; ++x) for (int y = 0; y < CHUNK_SIZE + DIRT_DEPTH; ++y) for (int z = 0; z < CHUNK_SIZE; ++z) {
 
-            boolean blockAboveIsAir = getBlockInfo(chunk, above, x, y + 1, z) == air;
+            boolean blockAboveIsAir = getBlockId(chunk, above, x, y + 1, z) == air.id();
 
-            if (getBlockInfo(chunk, above, x, y, z) != air && blockAboveIsAir) {
-                chunk.trySet(x, y, z, grass);
+            if (getBlockId(chunk, above, x, y, z) != air.id() && blockAboveIsAir) {
+                chunk.trySet(x, y, z, grass.id());
 
                 for (int i = 1; i < DIRT_DEPTH; ++i) {
-                    chunk.trySet(x, y - i, z, dirt);
+                    chunk.trySet(x, y - i, z, dirt.id());
                 }
             }
         }
     }
 
-    private BlockInfo getBlockInfo(Chunk chunk, ReadonlyChunk above, int x, int y, int z) {
+    private int getBlockId(Chunk chunk, ReadonlyChunk above, int x, int y, int z) {
         if (y < CHUNK_SIZE) {
             return chunk.get(x, y, z);
         } else {

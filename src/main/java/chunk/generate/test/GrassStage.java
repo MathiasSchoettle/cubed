@@ -15,7 +15,7 @@ public class GrassStage implements ChunkGenerationStage {
     private final BlockInfo dirt;
     private final BlockInfo grass;
 
-    private static final int DIRT_DEPTH = 3;
+    private static final int DIRT_DEPTH = 2;
 
     public GrassStage(BlockInfo air, BlockInfo dirt, BlockInfo grass) {
         this.air = air;

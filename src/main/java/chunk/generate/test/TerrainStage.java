@@ -32,11 +32,8 @@ public class TerrainStage implements ChunkGenerationStage {
             int gz = (position.z() * CHUNK_SIZE) + z;
 
             var noise = SimplexNoise.noise2_ImproveX(seed, gx * PLATEAU_FREQUENCY, gz * PLATEAU_FREQUENCY);
-            noise *= noise;
 
-            var floorNoise = 70 * noise;
-
-            if (gy > floorNoise) {
+            if (gy > noise * 50) {
                 chunk.set(x, y, z, air);
             } else {
                 chunk.set(x, y, z, stone);

@@ -139,7 +139,7 @@ public class ChunkManager {
                 var key = new ChunkKey(chunkPosition.x + x, chunkPosition.y + y, chunkPosition.z + z);
 
                 // FIXME temporarily limit chunks to this height
-                if (key.y() > -2 && key.y() < 5) {
+                if (key.y() > -5 && key.y() < 5) {
                     load(key);
                 }
             }

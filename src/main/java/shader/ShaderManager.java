@@ -67,12 +67,19 @@ public class ShaderManager {
         int program = optional.get();
         glUseProgram(program);
 
-        var loc = locations.computeIfAbsent(name, (_key) -> new HashMap<>());
+        var loc = locations.computeIfAbsent(name, (_) -> new HashMap<>());
 
-        uniforms.uniforms.forEach((locationName, uniform) -> {
-            int locationId = loc.computeIfAbsent(locationName, (location) -> glGetUniformLocation(program, location));
-            uniform.bind(locationId);
-        });
+        // While profiling, a lot of lambdas where created here when using computeIfAbsent for loc
+        // don't really know why
+        for (var entry : uniforms.uniforms.entrySet()) {
+            if (!loc.containsKey(entry.getKey())) {
+                loc.put(entry.getKey(), glGetUniformLocation(program, entry.getKey()));
+            }
+
+            int locationId = loc.get(entry.getKey());
+
+            entry.getValue().bind(locationId);
+        }
     }
 
     public void update() {

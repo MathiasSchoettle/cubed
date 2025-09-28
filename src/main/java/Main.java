@@ -122,7 +122,7 @@ public class Main {
         // setup cubemap
         shaderManager.register("cubemap", "cubemap.vs", "cubemap.fs");
         var cubemapData = Stream.of("front.jpg", "back.jpg", "top.jpg", "bottom.jpg", "left.jpg", "right.jpg")
-                .map(name -> "/textures/cubemap/test/" + name)
+                .map(name -> "/textures/cubemap/sky/" + name)
                 .flatMap(filename -> fileLoader.pixels(filename).stream()).toList();
         textureHandler.loadCubemap("cubemap", 2048, cubemapData);
         cubemap = new Cubemap();

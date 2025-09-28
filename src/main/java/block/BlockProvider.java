@@ -6,7 +6,7 @@ import java.util.*;
 
 public class BlockProvider {
     // all registered block info records
-    private final Map<Integer, BlockInfo> blockInfos = new HashMap<>();
+    private final Map<Byte, BlockInfo> blockInfos = new HashMap<>();
     // list of texture file names, index corresponds to position in 2D texture array
     private final List<String> textures = new ArrayList<>();
 
@@ -15,7 +15,7 @@ public class BlockProvider {
     // index of invalid texture should always be 0
     private static final int[] INVALID_TEXTURE_OFFSETS = new int[] { 0, 0, 0, 0, 0, 0 };
     private static final BlockInfo INVALID_BLOCK_INFO = new BlockInfo(
-            -1,
+            (byte) -1,
             INVALID_BLOCK_NAME,
             INVALID_TEXTURE_OFFSETS,
             false,
@@ -37,7 +37,7 @@ public class BlockProvider {
         }
 
         // create block infos
-        int id = 0;
+        byte id = 0;
         for (var data : blockData) {
             var blockInfo = new BlockInfo(
                     id++,
@@ -87,7 +87,7 @@ public class BlockProvider {
 
     }
 
-    public BlockInfo getBlockInfo(int id) {
+    public BlockInfo getBlockInfo(byte id) {
         return blockInfos.get(id);
     }
 

@@ -25,5 +25,11 @@ public class TaskHandler {
 
     public void shutdown() {
         this.meshingExecutor.shutdown();
+        this.generationExecutor.shutdown();
     }
+
+    // 2² = 4
+    // 2³ = 8
+
+    // 2^12 = 4096 -> 12 bits
 }

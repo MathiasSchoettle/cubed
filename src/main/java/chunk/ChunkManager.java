@@ -39,7 +39,7 @@ public class ChunkManager {
     private final Map<ChunkKey, ChunkData> chunkMap = new HashMap<>();
 
     private final IVec3 chunkPosition = IVec3.of(0);
-    private static final int RENDER_DISTANCE = 20;
+    private static final int RENDER_DISTANCE = 16;
 
     // TODO shader manager and uniforms are temporary
     public ChunkManager(ChunkStorage storage, ChunkProvider provider, ChunkMesher mesher, ShaderManager shaderManager, Uniforms uniforms) {
@@ -137,11 +137,7 @@ public class ChunkManager {
 
             for (int x = -RENDER_DISTANCE; x <= RENDER_DISTANCE; x++) for (int y = -RENDER_DISTANCE; y <= RENDER_DISTANCE; y++) for (int z = -RENDER_DISTANCE; z <= RENDER_DISTANCE; z++) {
                 var key = new ChunkKey(chunkPosition.x + x, chunkPosition.y + y, chunkPosition.z + z);
-
-                // FIXME temporarily limit chunks to this height
-                if (key.y() > -5) {
-                    load(key);
-                }
+                load(key);
             }
         }
 

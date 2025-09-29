@@ -1,11 +1,11 @@
-package chunk.generate.test;
+package chunk.generate.stage.impl;
 
 import block.meta.BlockInfo;
 import chunk.data.Chunk;
 import chunk.generate.ChunkContext;
-import chunk.generate.ChunkGenerationStage;
 import chunk.generate.ChunkPosition;
 import chunk.generate.ReadonlyChunk;
+import chunk.generate.stage.ChunkGenerationStage;
 
 import static chunk.data.Chunk.CHUNK_SIZE;
 

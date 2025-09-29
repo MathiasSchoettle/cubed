@@ -4,8 +4,8 @@ import camera.Camera;
 import camera.CameraController;
 import chunk.*;
 import chunk.generate.ChunkProvider;
-import chunk.generate.test.GrassStage;
-import chunk.generate.test.TerrainStage;
+import chunk.generate.stage.impl.GrassStage;
+import chunk.generate.stage.impl.TerrainStage;
 import environment.Cubemap;
 import input.InputHandler;
 import math.vec.Vec3;
@@ -98,7 +98,7 @@ public class Main {
         inputHandler.registerResizeCallback((width, height) -> glViewport(0, 0, width, height));
 
         // setup camera controller
-        cameraController = new CameraController(new Camera(Vec3.of(0, 20, 0), Vec3.of(0, 0, -1)), inputHandler, delta);
+        cameraController = new CameraController(new Camera(Vec3.of(0, 64, 0), Vec3.of(0, 0, -1)), inputHandler, delta);
 
         // init shader
         shaderManager = new ShaderManager(new ProgramHandler(), fileLoader);

@@ -1,6 +1,7 @@
 package chunk.generate;
 
 import chunk.data.Chunk;
+import chunk.generate.stage.ChunkGenerationStage;
 
 public class ChunkGenerator {
 

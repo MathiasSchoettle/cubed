@@ -1,6 +1,7 @@
 package chunk.generate;
 
 import chunk.data.Chunk;
+import chunk.generate.stage.ChunkGenerationStage;
 import threading.TaskHandler;
 import utils.data.Tuple;
 

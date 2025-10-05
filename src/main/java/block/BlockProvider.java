@@ -84,7 +84,6 @@ public class BlockProvider {
 
     public BlockInfo getBlockInfo(String name) {
         return blockInfos.values().stream().filter(info -> info.name().equals(name)).findFirst().orElseThrow();
-
     }
 
     public BlockInfo getBlockInfo(byte id) {

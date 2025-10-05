@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.glViewport;
 
 public class InputHandler {
 
@@ -24,6 +23,8 @@ public class InputHandler {
 
     private final Vec2 mousePosition;
 
+    private boolean mouseFreed = false;
+
     public InputHandler(long window) {
         this.window = window;
 
@@ -33,9 +34,20 @@ public class InputHandler {
         glfwGetCursorPos(window, xPos, yPos);
         this.mousePosition = Vec2.of((float) xPos[0], (float) yPos[0]);
 
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
         glfwSetCursorPosCallback(window, (_window, x, y) -> handleMouseMove((float) x, (float) y));
 
         glfwSetWindowSizeCallback(window, (_window, width, height) -> resizeCallbacks.forEach(callback -> callback.apply(width, height)));
+
+        registerKeypressCallback(GLFW_KEY_ESCAPE, (action) -> {
+                if (action != GLFW_PRESS) {
+                    return;
+                }
+            
+                mouseFreed = !mouseFreed;
+                glfwSetInputMode(window, GLFW_CURSOR, mouseFreed ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+        });
 
         glfwSetKeyCallback(window, (_window, key, scancode, action, mods) -> {
             keypressCallbacks.forEach((k, callbacks) -> {
@@ -47,13 +59,18 @@ public class InputHandler {
     }
 
     private void handleMouseMove(float x, float y) {
+
         float dx = x - mousePosition.x;
         float dy = y - mousePosition.y;
 
-        mouseMoveCallbacks.forEach(callback -> callback.apply(x, y, dx, dy));
-
         mousePosition.x = x;
         mousePosition.y = y;
+
+        if (mouseFreed) {
+            return;
+        }
+
+        mouseMoveCallbacks.forEach(callback -> callback.apply(x, y, dx, dy));
     }
 
     public void update() {

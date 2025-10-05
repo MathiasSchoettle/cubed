@@ -18,7 +18,7 @@ public class Camera {
     private final Mat4 cubemapViewMatrix = Mat4.of(0);
 
     private final float FOV = (float) Math.toRadians(90);
-    private final float NEAR = 0.01f;
+    private final float NEAR = 0.1f;
     private final float FAR = 1000;
     private float aspectRatio = 16f / 9f;
 

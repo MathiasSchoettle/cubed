@@ -7,11 +7,6 @@ import chunk.generate.ChunkProvider;
 import chunk.generate.stage.impl.GrassStage;
 import chunk.generate.stage.impl.TerrainStage;
 import environment.Cubemap;
-import imgui.ImGui;
-import imgui.ImGuiIO;
-import imgui.flag.ImGuiConfigFlags;
-import imgui.gl3.ImGuiImplGl3;
-import imgui.glfw.ImGuiImplGlfw;
 import input.InputHandler;
 import math.vec.Vec3;
 import org.lwjgl.glfw.*;
@@ -21,6 +16,7 @@ import shader.ShaderManager;
 import shader.uniform.Uniforms;
 import texture.TextureHandler;
 import threading.TaskHandler;
+import ui.UserInterfaceRenderer;
 import utils.time.Delta;
 import utils.filesystem.FileLoader;
 
@@ -56,30 +52,16 @@ public class Main {
 
     private TaskHandler taskHandler;
 
-    // TODO check if all this imgui shit is really needed
-    private final ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
-    private final ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
+    private UserInterfaceRenderer uiRenderer;
 
     public void run() {
         init();
-        initImGui();
         loop();
 
         glfwFreeCallbacks(window);
         glfwDestroyWindow(window);
 
         glfwTerminate();
-    }
-
-    private void initImGui() {
-        ImGui.createContext();
-        ImGuiIO io = ImGui.getIO();
-
-        io.addConfigFlags(ImGuiConfigFlags.NavEnableKeyboard);
-        io.addConfigFlags(ImGuiConfigFlags.DockingEnable);
-
-        imGuiGlfw.init(window, true);
-        imGuiGl3.init("#version 150");
     }
 
     private void init() {
@@ -115,6 +97,9 @@ public class Main {
 
         // setup input handler
         inputHandler = new InputHandler(window);
+
+        uiRenderer = new UserInterfaceRenderer(window);
+
         inputHandler.registerResizeCallback((width, height) -> glViewport(0, 0, width, height));
 
         // setup camera controller
@@ -181,17 +166,6 @@ public class Main {
         while ( !glfwWindowShouldClose(window) ) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            imGuiGlfw.newFrame();
-            imGuiGl3.newFrame();
-            ImGui.newFrame();
-            ImGui.begin("Example Window");
-            ImGui.text("Hello from ImGui!");
-            if (ImGui.button("Click Me")) {
-                System.out.println("Button clicked!");
-            }
-            ImGui.end();
-            ImGui.render();
-
             delta.update();
             shaderManager.update();
             cameraController.update();
@@ -203,14 +177,13 @@ public class Main {
             shaderManager.use("cubemap", cubemapUniforms);
             cubemap.render();
 
-            imGuiGl3.renderDrawData(ImGui.getDrawData());
+            uiRenderer.render(delta.delta());
+
             glfwSwapBuffers(window);
             glfwPollEvents();
         }
 
-        imGuiGl3.shutdown();
-        imGuiGlfw.shutdown();
-        ImGui.destroyContext();
+        uiRenderer.shutdown();
         taskHandler.shutdown();
     }
 
